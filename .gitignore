@@ -1,0 +1,7 @@
+*~
+*.o
+*.so*
+Makefile
+*.pro.user
+.moc
+.obj

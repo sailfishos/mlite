@@ -148,6 +148,8 @@ public:
     static const QString ImErrorEvent;
     //! A received instant message notification.
     static const QString ImReceivedEvent;
+    //! An incoming instant message video chat notification
+    static const QString ImIncomingVideoChat;
     //! A generic network notification that doesn't fit into any other category.
     static const QString NetworkEvent;
     //! A network connection notification, such as successful sign-on to a network service. This should not be confused with device.added for new network devices.
@@ -172,6 +174,8 @@ public:
     static const QString MessageEvent;
     //! A new SMS/MMS notification.
     static const QString MessageArrivedEvent;
+    //! A incoming phone call.
+    static const QString PhoneIncomingCall;
 
     /*!
      * Creates a new representation of a notification. The notification will

@@ -33,6 +33,7 @@ const QString MNotification::EmailBouncedEvent = "email.bounced";
 const QString MNotification::ImEvent = "im";
 const QString MNotification::ImErrorEvent = "im.error";
 const QString MNotification::ImReceivedEvent = "im.received";
+const QString MNotification::ImIncomingVideoChat = "im.incomingVideoChat";
 const QString MNotification::NetworkEvent = "network";
 const QString MNotification::NetworkConnectedEvent = "network.connected";
 const QString MNotification::NetworkDisconnectedEvent = "network.disconnected";
@@ -45,6 +46,7 @@ const QString MNotification::TransferCompleteEvent = "transfer.complete";
 const QString MNotification::TransferErrorEvent = "transfer.error";
 const QString MNotification::MessageEvent = "x-nokia.message";
 const QString MNotification::MessageArrivedEvent = "x-nokia.message.arrived";
+const QString MNotification::PhoneIncomingCall = "x-nokia.call";
 
 MNotificationPrivate::MNotificationPrivate() :
     id(0),

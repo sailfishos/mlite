@@ -47,6 +47,7 @@ const QString MNotification::TransferErrorEvent = "transfer.error";
 const QString MNotification::MessageEvent = "x-nokia.message";
 const QString MNotification::MessageArrivedEvent = "x-nokia.message.arrived";
 const QString MNotification::PhoneIncomingCall = "x-nokia.call";
+const QString MNotification::HardNotification = "hard.notification";
 
 MNotificationPrivate::MNotificationPrivate() :
     id(0),
@@ -187,6 +188,12 @@ QString MNotification::identifier() const
     return d->identifier;
 }
 
+void MNotification::setDeclineAction(const MRemoteAction &declineAction)
+{
+    Q_D(MNotification);
+    d->declineAction = declineAction.toString();
+}
+
 bool MNotification::publish()
 {
     Q_D(MNotification);
@@ -194,7 +201,7 @@ bool MNotification::publish()
     bool success = false;
     if (d->id == 0) {
         if (!d->summary.isNull() || !d->body.isNull() || !d->image.isNull() || !d->action.isNull() || !d->identifier.isNull()) {
-            d->id = MNotificationManager::instance()->addNotification(d->groupId, d->eventType, d->summary, d->body, d->action, d->image, d->count, d->identifier);
+            d->id = MNotificationManager::instance()->addNotification(d->groupId, d->eventType, d->summary, d->body, d->action, d->image, d->declineAction, d->count, d->identifier);
         } else {
             d->id = MNotificationManager::instance()->addNotification(d->groupId, d->eventType);
         }
@@ -202,7 +209,7 @@ bool MNotification::publish()
         success = d->id != 0;
     } else {
         if (!d->summary.isNull() || !d->body.isNull() || !d->image.isNull() || !d->action.isNull() || !d->identifier.isNull()) {
-            success = MNotificationManager::instance()->updateNotification(d->id, d->eventType, d->summary, d->body, d->action, d->image, d->count, d->identifier);
+            success = MNotificationManager::instance()->updateNotification(d->id, d->eventType, d->summary, d->body, d->action, d->image, d->declineAction, d->count, d->identifier);
         } else {
             success = MNotificationManager::instance()->updateNotification(d->id, d->eventType);
         }
@@ -254,6 +261,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const MNotification &notifica
     argument << d->action;
     argument << d->count;
     argument << d->identifier;
+    argument << d->declineAction;
     argument.endStructure();
     return argument;
 }
@@ -271,6 +279,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, MNotification &no
     argument >> d->action;
     argument >> d->count;
     argument >> d->identifier;
+    argument >> d->declineAction;
     argument.endStructure();
     return argument;
 }
@@ -288,5 +297,6 @@ MNotification &MNotification::operator=(const MNotification &notification)
     d->action = dn->action;
     d->count = dn->count;
     d->identifier = dn->identifier;
+    d->declineAction = dn->declineAction;
     return *this;
 }

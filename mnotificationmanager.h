@@ -68,9 +68,10 @@ public:
      * \param imageURI the ID of the icon to be used in the notification
      * \param count the number of items inside this group
      * \param identifier the identifier string of the notification
+     * \param declineAction the remote action to be used when notification is declined
      * \return the ID of the new notification group
      */
-    uint addGroup(const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
+    uint addGroup(const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
 
     /*!
      * Adds a new notification group.
@@ -91,9 +92,10 @@ public:
      * \param imageURI the ID of the icon to be used in the notification
      * \param count the number of items inside this notification
      * \param identifier the identifier string of the notification
+     * \param declineAction the remote action to be used when notification is declined
      * \return the ID of the new notification
      */
-    uint addNotification(uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count = 1, const QString &identifier = QString());
+    uint addNotification(uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count = 1, const QString &identifier = QString());
 
     /*!
      * Adds a new notification.
@@ -133,7 +135,7 @@ public:
      * \param identifier the identifier string of the notification
      * \return true if the update succeeded, false otherwise
      */
-    bool updateGroup(uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier = QString());
+    bool updateGroup(uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier = QString());
 
     /*!
      * Updates an existing notification group.
@@ -157,7 +159,7 @@ public:
      * \param identifier the identifier string of the notification
      * \return true if the update succeeded, false otherwise
      */
-    bool updateNotification(uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count = 1, const QString &identifier = QString());
+    bool updateNotification(uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count = 1, const QString &identifier = QString());
 
     /*!
      * Updates an existing notification.

@@ -73,9 +73,9 @@ MNotificationManager *MNotificationManager::instance()
     return &notificationManagerInstance;
 }
 
-uint MNotificationManager::addGroup(const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
+uint MNotificationManager::addGroup(const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
 {
-    return proxy.addGroup(userId, eventType, summary, body, action, imageURI, count, identifier);
+    return proxy.addGroup(userId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
 }
 
 uint MNotificationManager::addGroup(const QString &eventType)
@@ -83,9 +83,9 @@ uint MNotificationManager::addGroup(const QString &eventType)
     return proxy.addGroup(userId, eventType);
 }
 
-uint MNotificationManager::addNotification(uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
+uint MNotificationManager::addNotification(uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
 {
-    return proxy.addNotification(userId, groupId, eventType, summary, body, action, imageURI, count, identifier);
+    return proxy.addNotification(userId, groupId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
 }
 
 uint MNotificationManager::addNotification(uint groupId, const QString &eventType)
@@ -103,9 +103,9 @@ bool MNotificationManager::removeNotification(uint notificationId)
     return proxy.removeNotification(userId, notificationId);
 }
 
-bool MNotificationManager::updateGroup(uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
+bool MNotificationManager::updateGroup(uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
 {
-    return proxy.updateGroup(userId, groupId, eventType, summary, body, action, imageURI, count, identifier);
+    return proxy.updateGroup(userId, groupId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
 }
 
 bool MNotificationManager::updateGroup(uint groupId, const QString &eventType)
@@ -113,9 +113,9 @@ bool MNotificationManager::updateGroup(uint groupId, const QString &eventType)
     return proxy.updateGroup(userId, groupId, eventType);
 }
 
-bool MNotificationManager::updateNotification(uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
+bool MNotificationManager::updateNotification(uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
 {
-    return proxy.updateNotification(userId, notificationId, eventType, summary, body, action, imageURI, count, identifier);
+    return proxy.updateNotification(userId, notificationId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
 }
 
 bool MNotificationManager::updateNotification(uint notificationId, const QString &eventType)

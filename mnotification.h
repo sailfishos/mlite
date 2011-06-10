@@ -176,6 +176,8 @@ public:
     static const QString MessageArrivedEvent;
     //! A incoming phone call.
     static const QString PhoneIncomingCall;
+    //! String to indicate hard notification
+    static const QString HardNotification;
 
     /*!
      * Creates a new representation of a notification. The notification will
@@ -292,6 +294,13 @@ public:
     QString identifier() const;
 
     /*!
+     * Sets the decline action to be executed when notification is declined.
+     *
+     * \param the decline action to be executed when notification is declined.
+     */
+    void setDeclineAction(const MRemoteAction &declineAction);
+
+     /*!
      * Publishes the notification. If the notification has not yet been
      * published a notification is created into the given notification
      * group (if any) and is given an ID by the notification manager.

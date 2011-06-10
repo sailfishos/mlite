@@ -65,7 +65,7 @@ bool MNotificationGroup::publish()
 
     if (d->id == 0) {
         if (!d->summary.isNull() || !d->body.isNull() || !d->image.isNull() || !d->action.isNull() || !d->identifier.isNull()) {
-            d->id = MNotificationManager::instance()->addGroup(d->eventType, d->summary, d->body, d->action, d->image, d->count, d->identifier);
+            d->id = MNotificationManager::instance()->addGroup(d->eventType, d->summary, d->body, d->action, d->image, d->declineAction, d->count, d->identifier);
         } else {
             d->id = MNotificationManager::instance()->addGroup(d->eventType);
         }
@@ -73,7 +73,7 @@ bool MNotificationGroup::publish()
         success = d->id != 0;
     } else {
         if (!d->summary.isNull() || !d->body.isNull() || !d->image.isNull() || !d->action.isNull() || !d->identifier.isNull()) {
-            success = MNotificationManager::instance()->updateGroup(d->id, d->eventType, d->summary, d->body, d->action, d->image, d->count, d->identifier);
+            success = MNotificationManager::instance()->updateGroup(d->id, d->eventType, d->summary, d->body, d->action, d->image, d->declineAction, d->count, d->identifier);
         } else {
             success = MNotificationManager::instance()->updateGroup(d->id, d->eventType);
         }
@@ -116,6 +116,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const MNotificationGroup &gro
     argument << d->action;
     argument << d->count;
     argument << d->identifier;
+    argument << d->declineAction;
     argument.endStructure();
     return argument;
 }
@@ -132,6 +133,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, MNotificationGrou
     argument >> d->action;
     argument >> d->count;
     argument >> d->identifier;
+    argument >> d->declineAction;
     argument.endStructure();
     return argument;
 }

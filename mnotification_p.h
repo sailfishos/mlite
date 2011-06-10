@@ -62,6 +62,9 @@ public:
 
     //! The identifier of the notification set by the application
     QString identifier;
+
+    //! The action to be executed when the notification is declined.
+    QString declineAction;
 };
 
 #endif // MNOTIFICATION_P_H

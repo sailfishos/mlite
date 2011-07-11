@@ -129,5 +129,8 @@ void MRemoteAction::call()
     Q_D(MRemoteAction);
 
     QDBusInterface interface(d->serviceName, d->objectPath, d->interface.toAscii());
-    interface.asyncCallWithArgumentList(d->methodName, d->arguments);
+    if (interface.isValid())
+    {
+        interface.asyncCallWithArgumentList(d->methodName, d->arguments);
+    }
 }

@@ -70,7 +70,7 @@ target.path += $$[QT_INSTALL_LIBS]
 INSTALLS += target headers pcfiles
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
-VERSION = 0.0.4
+VERSION = 0.0.5
 PROJECT_NAME = mlite
 
 dist.commands += rm -fR $${PROJECT_NAME}-$${VERSION} &&

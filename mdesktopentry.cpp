@@ -21,6 +21,7 @@
 #include <QStringList>
 #include <QLocale>
 #include <QTextStream>
+#include <QTextCodec>
 #include <QDebug>
 
 #include "mdesktopentry.h"
@@ -135,6 +136,7 @@ bool MDesktopEntryPrivate::readDesktopFile(QIODevice &device, QMap<QString, QStr
     QString currentGroup;
     QStringList groupNames;
     QTextStream stream(&device);
+    stream.setCodec(QTextCodec::codecForName("UTF-8"));
     while (!stream.atEnd()) {
         QString line = stream.readLine().trimmed();
         if (!line.isEmpty() && !line.startsWith('#')) {

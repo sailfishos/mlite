@@ -43,7 +43,8 @@ HEADERS += \
     mnotificationmanagerproxy.h \
     MNotification \
     MGConfItem \
-    MNotificationGroup
+    MNotificationGroup \
+    MDesktopEntry
 
 INSTALL_HEADERS += \
     mgconfitem.h \
@@ -57,7 +58,8 @@ INSTALL_HEADERS += \
     mnotificationgroup.h \
     MNotification \
     MGConfItem \
-    MNotificationGroup
+    MNotificationGroup \
+    MDesktopEntry
 
 pcfiles.files += mlite.pc
 pcfiles.path += $$INSTALL_ROOT/$$[QT_INSTALL_LIBS]/pkgconfig

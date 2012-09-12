@@ -60,7 +60,7 @@ INSTALL_HEADERS += \
     MNotificationGroup
 
 pcfiles.files += mlite.pc
-pcfiles.path += $$INSTALL_ROOT/usr/lib/pkgconfig
+pcfiles.path += $$INSTALL_ROOT/$$[QT_INSTALL_LIBS]/pkgconfig
 
 headers.files += $$INSTALL_HEADERS
 headers.path += $$INSTALL_ROOT/usr/include/mlite

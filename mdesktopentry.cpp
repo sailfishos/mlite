@@ -26,7 +26,6 @@
 
 #include "mdesktopentry.h"
 #include "mdesktopentry_p.h"
-#include "mgconfitem.h"
 
 const QString TypeKey("Desktop Entry/Type");
 const QString VersionKey("Desktop Entry/Version");
@@ -310,11 +309,7 @@ QString MDesktopEntry::name() const
     QString name = value(NameKey);
     QString lang, script, country, postfixKey;
 
-    MGConfItem item("/meego/ux/locale");
-    if (item.value() == QVariant::Invalid)
-        parsePosixLang(getenv("LANG"), &lang, &country, &script);
-    else
-        parsePosixLang(item.value().toString(), &lang, &country, &script);
+    parsePosixLang(getenv("LANG"), &lang, &country, &script);
 
     if (contains(postfixKey = NameKey + '[' + lang + '_' + country  + '@' + script + ']') ||
         contains(postfixKey = NameKey + '[' + lang + '_' + country  + ']') ||

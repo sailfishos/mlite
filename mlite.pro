@@ -1,64 +1,79 @@
-QT     = gui core dbus
+QT     = core dbus
 TARGET = $$qtLibraryTarget(mlite)
 TEMPLATE = lib
 
-CONFIG += link_pkgconfig
-PKGCONFIG += gconf-2.0
-
 DEFINES += MLITE_LIBRARY
 
-OBJECTS_DIR = .obj
-MOC_DIR = .moc
+CONFIG += link_pkgconfig
+packagesExist(gconf-2.0) {
+    PKGCONFIG += gconf-2.0
+    DEFINES += HAVE_GCONF
+    HEADERS += mgconfitem.h \
+               MGConfItem
+    SOURCES += mgconfitem.cpp
 
-SOURCES += \
-    mgconfitem.cpp \
-    mdesktopentry.cpp \
-    mremoteaction.cpp \
-    maction.cpp \
-    mfiledatastore.cpp \
+    INSTALL_HEADERS += mgconfitem.h \
+                       MGConfItem
+
+} else {
+    warning("gconf-2.0 not found; MGConfItem will not be built")
+}
+
+equals(QT_MAJOR_VERSION, 4) {
+    QT += gui
+    SOURCES += maction.cpp \
+               mremoteaction.cpp \
     mnotification.cpp \
     mnotificationgroup.cpp \
     mnotificationmanager.cpp \
     mnotificationmanagerproxy.cpp
 
+    HEADERS += maction.h \
+               maction_p.h \
+               MAction \
+               mremoteaction.h \
+               mremoteaction_p.h \
+               mnotification.h \
+               mnotification_p.h \
+               mnotificationgroup.h \
+               mnotificationgroup_p.h \
+               mnotificationmanager.h \
+               mnotificationmanagerproxy.h \
+               MNotification \
+               MNotificationGroup \
+
+    INSTALL_HEADERS += mremoteaction.h \
+                       MAction \
+                       mnotification.h \
+                       mnotificationgroup.h \
+                       MNotification \
+                       MNotificationGroup \
+                       maction.h
+
+}
+
+OBJECTS_DIR = .obj
+MOC_DIR = .moc
+
+SOURCES += \
+    mdesktopentry.cpp \
+    mfiledatastore.cpp
+
 HEADERS += \
     mdesktopentry_p.h \
     mdesktopentry.h \
-    mgconfitem.h \
     mlite-global.h \
-    mremoteaction.h \
-    mremoteaction_p.h \
-    maction.h \
-    maction_p.h \
-    MAction \
     mfiledatastore.h \
     mfiledatastore_p.h \
     mdataaccess.h \
     mdatastore.h \
-    mnotification.h \
-    mnotification_p.h \
-    mnotificationgroup.h \
-    mnotificationgroup_p.h \
-    mnotificationmanager.h \
-    mnotificationmanagerproxy.h \
-    MNotification \
-    MGConfItem \
-    MNotificationGroup \
     MDesktopEntry
 
+# TODO: sanitize based on conditional builds
 INSTALL_HEADERS += \
-    mgconfitem.h \
     mdesktopentry.h \
-    mremoteaction.h \
-    maction.h \
     mlite-global.h \
-    MAction \
     mfiledatastore.h \
-    mnotification.h \
-    mnotificationgroup.h \
-    MNotification \
-    MGConfItem \
-    MNotificationGroup \
     MDesktopEntry
 
 pcfiles.files += mlite.pc

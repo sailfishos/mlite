@@ -311,54 +311,6 @@ void MGConfItem::unset()
     set(QVariant());
 }
 
-QList<QString> MGConfItem::listDirs() const
-{
-    QList<QString> children;
-
-    withClient(client) {
-        QByteArray k = convertKey(priv->key);
-        GError *error = NULL;
-        GSList *dirs = gconf_client_all_dirs(client, k.data(), &error);
-        if(error) {
-            qDebug() << error->message;
-            g_error_free(error);
-            return children;
-        }
-
-        for (GSList *d = dirs; d; d = d->next) {
-            children.append(convertKey((char *)d->data));
-            g_free(d->data);
-        }
-        g_slist_free(dirs);
-    }
-
-    return children;
-}
-
-QList<QString> MGConfItem::listEntries() const
-{
-    QList<QString> children;
-
-    withClient(client) {
-        QByteArray k = convertKey(priv->key);
-        GError *error = NULL;
-        GSList *entries = gconf_client_all_entries(client, k.data(), &error);
-        if(error) {
-            qDebug() << error->message;
-            g_error_free(error);
-            return children;
-        }
-
-        for (GSList *e = entries; e; e = e->next) {
-            children.append(convertKey(((GConfEntry *)e->data)->key));
-            gconf_entry_free((GConfEntry *)e->data);
-        }
-        g_slist_free(entries);
-    }
-
-    return children;
-}
-
 MGConfItem::MGConfItem(const QString &key, QObject *parent)
     : QObject(parent)
 {

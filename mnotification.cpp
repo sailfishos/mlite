@@ -64,9 +64,7 @@ MNotificationManagerProxy *notificationManager()
 MNotificationPrivate::MNotificationPrivate() :
     id(0),
     groupId(0),
-    count(0),
-    userSetTimestamp(0),
-    publishedTimestamp(0)
+    count(0)
 {
 }
 
@@ -231,21 +229,21 @@ QString MNotification::identifier() const
 void MNotification::setTimestamp(const QDateTime &timestamp)
 {
     Q_D(MNotification);
-    d->userSetTimestamp = timestamp.isValid() ? timestamp.toTime_t() : 0;
+    d->userSetTimestamp = timestamp;
 }
 
 const QDateTime MNotification::timestamp() const
 {
     Q_D(const MNotification);
-    return d->publishedTimestamp != 0 ? QDateTime::fromTime_t(d->publishedTimestamp) : QDateTime();
+    return d->publishedTimestamp;
 }
 
 bool MNotification::publish()
 {
     Q_D(MNotification);
 
-    if (d->userSetTimestamp == 0) {
-        d->userSetTimestamp = QDateTime::currentDateTimeUtc().toTime_t();
+    if (d->userSetTimestamp.isNull()) {
+        d->userSetTimestamp = QDateTime::currentDateTimeUtc();
     }
 
     QString summary;
@@ -262,7 +260,7 @@ bool MNotification::publish()
         d->publishedTimestamp = d->userSetTimestamp;
     }
 
-    d->userSetTimestamp = 0;
+    d->userSetTimestamp = QDateTime();
 
     return d->id != 0;
 }
@@ -343,7 +341,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, MNotification &no
     }
     notification.d_ptr->eventType = hints.value("category").toString();
     notification.d_ptr->count = hints.value("x-nemo-item-count").toUInt();
-    notification.d_ptr->userSetTimestamp = hints.value("x-nemo-timestamp").toDateTime().toTime_t();
+    notification.d_ptr->userSetTimestamp = hints.value("x-nemo-timestamp").toDateTime();
     notification.d_ptr->action = hints.value("x-nemo-remote-action-default").toString();
     notification.d_ptr->identifier = hints.value("x-nemo-legacy-identifier").toString();
     notification.d_ptr->groupId = hints.value("x-nemo-legacy-group-id").toUInt();

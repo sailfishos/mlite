@@ -21,6 +21,7 @@
 #define MNOTIFICATION_P_H
 
 #include <QPointer>
+#include <QDateTime>
 #include <QVariantHash>
 
 class MNotificationManagerProxy;
@@ -74,10 +75,10 @@ public:
     QString identifier;
 
     //! User set timestamp of notification
-    uint userSetTimestamp;
+    QDateTime userSetTimestamp;
 
     //!  Timestamp that has been previously published
-    uint publishedTimestamp;
+    QDateTime publishedTimestamp;
 };
 
 #endif // MNOTIFICATION_P_H

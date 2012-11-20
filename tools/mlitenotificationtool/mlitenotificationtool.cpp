@@ -303,9 +303,6 @@ int main(int argc, char *argv[])
                 group.setAction(*remoteAction);
                 group.setCount(count);
                 group.setIdentifier(identifier);
-                if (timestamp != 0) {
-                    group.setTimestamp(QDateTime::fromTime_t(timestamp));
-                }
                 group.publish();
                 result = group.id();
             } else {
@@ -345,9 +342,6 @@ int main(int argc, char *argv[])
                 group.setAction(*remoteAction);
                 group.setCount(count);
                 group.setIdentifier(identifier);
-                if (timestamp != 0) {
-                    group.setTimestamp(QDateTime::fromTime_t(timestamp));
-                }
                 group.publish();
             } else {
                 MNotificationToolNotification notification(id);

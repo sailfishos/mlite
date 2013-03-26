@@ -2,11 +2,9 @@
 ** This file was derived from the MDesktopEntry implementation in the
 ** libmeegotouch library.
 **
-** Original Copyright:
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
-**
-** Copyright on new work:
-** Copyright 2011 Intel Corp.
+** Copyright (C) 2010, 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Intel Corp.
+** Copyright (C) 2012, 2013 Jolla Ltd.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -19,7 +17,8 @@
 #include <QRegExp>
 #include <QFile>
 #include <QStringList>
-#include <QLocale>
+#include <QCoreApplication>
+#include <QTranslator>
 #include <QTextStream>
 #include <QTextCodec>
 #include <QDebug>
@@ -49,6 +48,7 @@ const QString URLKey("Desktop Entry/URL");
 const QString LogicalIdKey("Desktop Entry/X-MeeGo-Logical-Id");
 const QString TranslationCatalogKey("Desktop Entry/X-MeeGo-Translation-Catalog");
 const QString XMaemoServiceKey("Desktop Entry/X-Maemo-Service");
+QMap<QString, QSharedPointer<QTranslator> > MDesktopEntryPrivate::translators;
 
 // The syntax of the locale string in the POSIX environment variables
 // related to locale is:
@@ -75,25 +75,13 @@ void parsePosixLang(const QString &localeString, QString *language, QString *cou
 
     if (regexp.indexIn(localeString) == 0 &&
             regexp.capturedTexts().size() == 6) { // size of regexp pattern above
-
-        *language = regexp.capturedTexts().at(1); // language
-
-        // POSIX locale modifier, interpreted as script
-        if (!regexp.capturedTexts().at(5).isEmpty())
-            *script = regexp.capturedTexts().at(5);
-        else
-            *script = "";
-
-        if (!regexp.capturedTexts().at(3).isEmpty())
-            *country = regexp.capturedTexts().at(3); // country
-        else
-            *country = "";
-    }
-    else
-    {
-        *language = "";
-        *script = "";
-        *country = "";
+        *language = regexp.capturedTexts().at(1);
+        *script = regexp.capturedTexts().at(5);
+        *country = regexp.capturedTexts().at(3);
+    } else {
+        *language = QString();
+        *script = QString();
+        *country = QString();
     }
 }
 
@@ -105,12 +93,27 @@ MDesktopEntryPrivate::MDesktopEntryPrivate(const QString &fileName) :
     QFile file(fileName);
 
     //Checks if the file exists and opens it in readonly mode
-    if (file.exists() && file.open(QIODevice::ReadOnly)) 
-    {
-        readDesktopFile(file, desktopEntriesMap);
-    } 
-    else 
-    {
+    if (file.exists() && file.open(QIODevice::ReadOnly)) {
+        if (readDesktopFile(file, desktopEntriesMap)) {
+            // Load the translation catalog if it has been defined for the entry.
+            if (desktopEntriesMap.contains(TranslationCatalogKey)) {
+                // Load the catalog from disk if it's not yet loaded
+                QString catalog = desktopEntriesMap.value(TranslationCatalogKey);
+                QString engineeringEnglishCatalog = catalog + "_eng_en";
+                if (!translators.contains(engineeringEnglishCatalog)) {
+                    translators[engineeringEnglishCatalog] = QSharedPointer<QTranslator>(new QTranslator(0));
+                    translators[engineeringEnglishCatalog]->load(engineeringEnglishCatalog, "/usr/share/translations");
+                    qApp->installTranslator(translators[engineeringEnglishCatalog].data());
+                }
+
+                if (!translators.contains(catalog)) {
+                    translators[catalog] = QSharedPointer<QTranslator>(new QTranslator(0));
+                    translators[catalog]->load(QLocale(), catalog, "-", "/usr/share/translations");
+                    qApp->installTranslator(translators[catalog].data());
+                }
+            }
+        }
+    } else {
         qDebug() << "Specified Desktop file does not exist" << fileName;
     }
 }
@@ -121,6 +124,13 @@ MDesktopEntryPrivate::~MDesktopEntryPrivate()
 
 bool MDesktopEntryPrivate::readDesktopFile(QIODevice &device, QMap<QString, QString> &desktopEntriesMap)
 {
+    valid = MDesktopEntry::readDesktopFile(device, desktopEntriesMap);
+    return valid;
+}
+
+bool MDesktopEntry::readDesktopFile(QIODevice &device, QMap<QString, QString> &desktopEntriesMap)
+{
+    bool valid = true;
     // Group header is of form [groupname]
     // The group name is captured
     // Group names may contain all ASCII characters except for [ and ] and control characters
@@ -307,15 +317,24 @@ QString MDesktopEntry::version() const
 QString MDesktopEntry::name() const
 {
     QString name = value(NameKey);
-    QString lang, script, country, postfixKey;
 
-    parsePosixLang(getenv("LANG"), &lang, &country, &script);
+    if (contains(LogicalIdKey)) {
+        name = qtTrId(value(LogicalIdKey).toAscii().data());
+    } else {
+        QString lang, variant, country, postfixKey;
 
-    if (contains(postfixKey = NameKey + '[' + lang + '_' + country  + '@' + script + ']') ||
-        contains(postfixKey = NameKey + '[' + lang + '_' + country  + ']') ||
-        contains(postfixKey = NameKey + '[' + lang + ']')) {
-        // Use the freedesktop.org standard localization style
-        name = value(postfixKey);
+        parsePosixLang(getenv("LANG"), &lang, &country, &variant);
+        if (contains(postfixKey = NameKey + '[' + lang + '_' +
+                                  country  + '@' +
+                                  variant  + ']') ||
+                contains(postfixKey = NameKey + '[' + lang + '_' +
+                                      country  + ']') ||
+                contains(postfixKey = NameKey + '[' + lang + '@' +
+                                      variant  + ']') ||
+                contains(postfixKey = NameKey + '[' + lang + ']')) {
+            // Use the freedesktop.org standard localization style
+            name = value(postfixKey);
+        }
     }
 
     return name;

@@ -2,11 +2,9 @@
 ** This file was derived from the MDesktopEntry implementation in the
 ** libmeegotouch library.
 **
-** Original Copyright:
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
-**
-** Copyright on new work:
-** Copyright 2011 Intel Corp.
+** Copyright (C) 2010, 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Intel Corp.
+** Copyright (C) 2012, 2013 Jolla Ltd.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -229,6 +227,15 @@ public:
      * Returns false if key is not present.
      */
     bool contains(const QString &group, const QString &key) const;
+
+    /*!
+     * Parses a desktop entry file.
+     *
+     * \param device the QIODevice to read the desktop file from
+     * \param map the QMap to store key-value pairs to
+     * \return true if desktop file can be parsed
+     */
+    static bool readDesktopFile(QIODevice &device, QMap<QString, QString> &desktopEntriesMap);
 
 protected:
     /*! \internal */

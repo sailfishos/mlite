@@ -1,13 +1,10 @@
 /***************************************************************************
+** This file was derived from the MDesktopEntry implementation in the
+** libmeegotouch library.
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (directui@nokia.com)
-**
-** This file is part of libmeegotouch.
-**
-** If you have questions regarding the use of this file, please contact
-** Nokia at directui@nokia.com.
+** Copyright (C) 2010, 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Intel Corp.
+** Copyright (C) 2012, 2013 Jolla Ltd.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -20,7 +17,10 @@
 #ifndef MDESKTOPENTRY_P_H
 #define MDESKTOPENTRY_P_H
 
+#include <QSharedPointer>
+
 class MDesktopEntry;
+class QTranslator;
 
 /*!
  * MDesktopEntryPrivate is the private class for MDesktopEntry.
@@ -56,6 +56,9 @@ public:
 
     //! A map for storing the desktop entries keys and their corresponding values
     QMap<QString, QString> desktopEntriesMap;
+
+    //! A map for storing translators for translation catalogs
+    static QMap<QString, QSharedPointer<QTranslator> > translators;
 
     /*!
      * Returns the boolean value of a key.

@@ -5,7 +5,7 @@ includedir=${prefix}/include/mlite
 
 Name: mlite
 Description: Selected classes pulled from the MeeGo Touch Framework
-Version: 0.0.8
+Version: @VERSION@
 Cflags: -I${includedir}
 Libs: -L${libdir} -lmlite
-Requires: QtDBus QtGui
+Requires: Qt5DBus

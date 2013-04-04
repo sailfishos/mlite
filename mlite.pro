@@ -1,7 +1,8 @@
 system(qdbusxml2cpp notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
 
 QT     = core dbus
-TARGET = $$qtLibraryTarget(mlite)
+equals(QT_MAJOR_VERSION, 4): TARGET = $$qtLibraryTarget(mlite)
+equals(QT_MAJOR_VERSION, 5): TARGET = $$qtLibraryTarget(mlite)
 TEMPLATE = lib
 
 DEFINES += MLITE_LIBRARY
@@ -69,11 +70,13 @@ INSTALL_HEADERS += \
     mfiledatastore.h \
     MDesktopEntry
 
-pcfiles.files += mlite.pc
+equals(QT_MAJOR_VERSION, 4): pcfiles.files = mlite.pc
+equals(QT_MAJOR_VERSION, 5): pcfiles.files = mlite.pc
 pcfiles.path += $$INSTALL_ROOT/$$[QT_INSTALL_LIBS]/pkgconfig
 
 headers.files += $$INSTALL_HEADERS
-headers.path += $$INSTALL_ROOT/usr/include/mlite
+equals(QT_MAJOR_VERSION, 4): headers.path += $$INSTALL_ROOT/usr/include/mlite
+equals(QT_MAJOR_VERSION, 5): headers.path += $$INSTALL_ROOT/usr/include/mlite
 
 target.path += $$[QT_INSTALL_LIBS]
 

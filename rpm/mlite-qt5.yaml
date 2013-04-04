@@ -1,0 +1,30 @@
+Name: mlite-qt5
+Summary: Useful classes originating from MeeGo Touch
+Version: 0.0.10
+Release: 1
+Group: System/Libraries
+License: LGPL v2.1
+URL: http://www.meego.com
+Sources:
+    - "%{name}-%{version}.tar.bz2"
+Description: |
+    Select set of useful classes from meegotouch that do not require
+    taking in all of meegotouch.
+PkgConfigBR:
+    - Qt5DBus
+    - Qt5Core
+    - gconf-2.0
+Configure: none
+Builder: qmake
+Files:
+    - "%{_libdir}/libmlite5.so.*"
+SubPackages:
+- Name: devel
+  Summary: mlite development package
+  Group: System/Libraries
+  Files:
+        - "%{_includedir}/mlite5"
+        - "%{_libdir}/pkgconfig/*.pc"
+        - "%{_libdir}/libmlite5.so"
+  Description: |
+        Development files needed for using the mlite library

@@ -319,7 +319,7 @@ QString MDesktopEntry::name() const
     QString name = value(NameKey);
 
     if (contains(LogicalIdKey)) {
-        name = qtTrId(value(LogicalIdKey).toAscii().data());
+        name = qtTrId(value(LogicalIdKey).toLatin1().data());
     } else {
         QString lang, variant, country, postfixKey;
 

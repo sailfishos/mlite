@@ -101,7 +101,7 @@ void MRemoteAction::fromString(const QString &string)
 
     const int count = l.count();
     for (int i = 4; i < count; ++i) {
-        QByteArray byteArray = QByteArray::fromBase64(l.at(i).toAscii());
+        QByteArray byteArray = QByteArray::fromBase64(l.at(i).toLatin1());
         QBuffer buffer(&byteArray);
         buffer.open(QIODevice::ReadOnly);
         QDataStream stream(&buffer);
@@ -124,7 +124,7 @@ void MRemoteAction::trigger()
 {
     Q_D(MRemoteAction);
 
-    QDBusInterface interface(d->serviceName, d->objectPath, d->interface.toAscii());
+    QDBusInterface interface(d->serviceName, d->objectPath, d->interface.toLatin1());
     if (interface.isValid()) {
         interface.asyncCallWithArgumentList(d->methodName, d->arguments);
     }

@@ -20,7 +20,6 @@ Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(QtDBus)
 BuildRequires:  pkgconfig(QtCore)
-BuildRequires:  pkgconfig(QtGui)
 BuildRequires:  pkgconfig(gconf-2.0)
 
 %description

@@ -1,14 +1,19 @@
-VERSION = 0.1.0
-PROJECT_NAME = mlite
-
-system(qdbusxml2cpp notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
+isEmpty(VERSION) {
+    GIT_TAG = $$system(git describe --tags --abbrev=0)
+    GIT_VERSION = $$find(GIT_TAG, ^\\d+(\\.\\d+)?(\\.\\d+)?$)
+    isEmpty(GIT_VERSION) {
+        # if you're trying to build this from a tarball, I'm sorry. but being
+        # able to specify the version in just one place (git tags) is a lot less
+        # error-prone and easy.
+        error("Can't find a valid git tag version, got: $$GIT_TAG")
+    }
+    !isEmpty(GIT_VERSION): VERSION = $$GIT_VERSION
+}
 
 QT     = core dbus
 equals(QT_MAJOR_VERSION, 4): TARGET = $$qtLibraryTarget(mlite)
 equals(QT_MAJOR_VERSION, 5): TARGET = $$qtLibraryTarget(mlite5)
 TEMPLATE = lib
-
-DEFINES += MLITE_LIBRARY
 
 CONFIG += link_pkgconfig
 packagesExist(gconf-2.0) {
@@ -27,6 +32,9 @@ packagesExist(gconf-2.0) {
 
 equals(QT_MAJOR_VERSION, 4) {
     include(json/json.pri)
+
+    system(qdbusxml2cpp notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
+
     SOURCES += mnotificationmanagerproxy.cpp \
                mnotification.cpp \
                mnotificationgroup.cpp \
@@ -49,29 +57,29 @@ equals(QT_MAJOR_VERSION, 4) {
                        MRemoteAction
 }
 
-OBJECTS_DIR = .obj
-MOC_DIR = .moc
-
 SOURCES += \
     mdesktopentry.cpp \
     mfiledatastore.cpp
 
 HEADERS += \
     mdesktopentry_p.h \
-    mdesktopentry.h \
     mlite-global.h \
-    mfiledatastore.h \
     mfiledatastore_p.h \
     mdataaccess.h \
-    mdatastore.h \
-    MDesktopEntry
+    mdatastore.h
 
-# TODO: sanitize based on conditional builds
 INSTALL_HEADERS += \
     mdesktopentry.h \
     mlite-global.h \
     mfiledatastore.h \
     MDesktopEntry
+
+HEADERS += $$INSTALL_HEADERS
+
+DEFINES += MLITE_LIBRARY
+
+OBJECTS_DIR = .obj
+MOC_DIR = .moc
 
 equals(QT_MAJOR_VERSION, 4): PCFILE=mlite.pc
 equals(QT_MAJOR_VERSION, 5): PCFILE=mlite5.pc
@@ -90,11 +98,3 @@ equals(QT_MAJOR_VERSION, 5): headers.path += $$INSTALL_ROOT/usr/include/mlite5
 target.path += $$[QT_INSTALL_LIBS]
 
 INSTALLS += target headers pcfiles
-
-TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
-
-dist.commands += rm -fR $${PROJECT_NAME}-$${VERSION} &&
-dist.commands += git clone . $${PROJECT_NAME}-$${VERSION} &&
-dist.commands += rm -fR $${PROJECT_NAME}-$${VERSION}/.git &&
-dist.commands += tar jcpvf $${PROJECT_NAME}-$${VERSION}.tar.bz2 $${PROJECT_NAME}-$${VERSION}
-QMAKE_EXTRA_TARGETS += dist

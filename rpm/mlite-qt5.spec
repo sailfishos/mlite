@@ -47,7 +47,8 @@ Development files needed for using the mlite library
 # >> build pre
 # << build pre
 
-%qmake 
+%qmake  \
+    VERSION=%{version}
 
 make %{?jobs:-j%jobs}
 

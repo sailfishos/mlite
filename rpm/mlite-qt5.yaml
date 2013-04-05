@@ -16,6 +16,8 @@ PkgConfigBR:
     - gconf-2.0
 Configure: none
 Builder: qmake
+QMakeOptions:
+    - VERSION=%{version}
 Files:
     - "%{_libdir}/libmlite5.so.*"
 SubPackages:

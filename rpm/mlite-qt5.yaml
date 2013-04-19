@@ -15,7 +15,7 @@ PkgConfigBR:
     - Qt5Core
     - gconf-2.0
 Configure: none
-Builder: qmake
+Builder: qmake5
 QMakeOptions:
     - VERSION=%{version}
 Files:

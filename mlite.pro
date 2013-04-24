@@ -5,7 +5,8 @@ isEmpty(VERSION) {
         # if you're trying to build this from a tarball, I'm sorry. but being
         # able to specify the version in just one place (git tags) is a lot less
         # error-prone and easy.
-        error("Can't find a valid git tag version, got: $$GIT_TAG")
+        warning("Can't find a valid git tag version, got: $$GIT_TAG")
+        GIT_VERSION = 0.0.0
     }
     !isEmpty(GIT_VERSION): VERSION = $$GIT_VERSION
 }
@@ -32,47 +33,41 @@ packagesExist(gconf-2.0) {
 
 equals(QT_MAJOR_VERSION, 4) {
     include(json/json.pri)
-
-    system(qdbusxml2cpp notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
-
-    SOURCES += mnotificationmanagerproxy.cpp \
-               mnotification.cpp \
-               mnotificationgroup.cpp \
-               mremoteaction.cpp
-
-    HEADERS += mnotificationmanagerproxy.h \
-               mnotification.h \
-               mnotification_p.h \
-               mnotificationgroup.h \
-               mnotificationgroup_p.h \
-               MNotification \
-               MNotificationGroup \
-               mremoteaction.h
-
-    INSTALL_HEADERS += mnotification.h \
-                       mnotificationgroup.h \
-                       mremoteaction.h \
-                       MNotification \
-                       MNotificationGroup \
-                       MRemoteAction
 }
 
-SOURCES += \
-    mdesktopentry.cpp \
-    mfiledatastore.cpp
+system(qdbusxml2cpp notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
 
-HEADERS += \
-    mdesktopentry_p.h \
-    mlite-global.h \
-    mfiledatastore_p.h \
-    mdataaccess.h \
-    mdatastore.h
+SOURCES += mnotificationmanagerproxy.cpp \
+           mnotification.cpp \
+           mnotificationgroup.cpp \
+           mremoteaction.cpp \
+           mdesktopentry.cpp \
+           mfiledatastore.cpp
 
-INSTALL_HEADERS += \
-    mdesktopentry.h \
-    mlite-global.h \
-    mfiledatastore.h \
-    MDesktopEntry
+HEADERS += mnotificationmanagerproxy.h \
+           mnotification.h \
+           mnotification_p.h \
+           mnotificationgroup.h \
+           mnotificationgroup_p.h \
+           MNotification \
+           MNotificationGroup \
+           mremoteaction.h \
+           mdesktopentry_p.h \
+           mlite-global.h \
+           mfiledatastore_p.h \
+           mdataaccess.h \
+           mdatastore.h
+
+INSTALL_HEADERS += mnotification.h \
+                   mnotificationgroup.h \
+                   mremoteaction.h \
+                   MNotification \
+                   MNotificationGroup \
+                   MRemoteAction \
+                   mdesktopentry.h \
+                   mlite-global.h \
+                   mfiledatastore.h \
+                   MDesktopEntry
 
 HEADERS += $$INSTALL_HEADERS
 

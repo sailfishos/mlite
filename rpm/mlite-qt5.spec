@@ -44,6 +44,7 @@ Development files needed for using the mlite library
 
 %build
 # >> build pre
+export QT_SELECT=5
 # << build pre
 
 %qmake5  \

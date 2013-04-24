@@ -9,7 +9,7 @@ Name:       mlite-qt5
 # << macros
 
 Summary:    Useful classes originating from MeeGo Touch
-Version:    0.0.10
+Version:    0.1.4
 Release:    1
 Group:      System/Libraries
 License:    LGPL v2.1

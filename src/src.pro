@@ -23,11 +23,18 @@ packagesExist(dconf) {
     PKGCONFIG += dconf
     DEFINES += HAVE_DCONF
     HEADERS += mgconfitem.h \
-               MGConfItem
-    SOURCES += mgconfitem.cpp
+               MGConfItem \
+               mdconf_p.h \
+               mdconfgroup.h \
+               MDConfGroup
+    SOURCES += mgconfitem.cpp \
+               mdconf.cpp \
+               mdconfgroup.cpp
 
     INSTALL_HEADERS += mgconfitem.h \
-                       MGConfItem
+                       MGConfItem \
+                       mdconfgroup.h \
+                       MDConfGroup
 
 } else {
     warning("dconf not found; MGConfItem will not be built")
@@ -82,7 +89,7 @@ pcfiles.CONFIG = no_check_exist
 pcfiles.path += $$INSTALL_ROOT/$$[QT_INSTALL_LIBS]/pkgconfig
 
 headers.files += $$INSTALL_HEADERS
-headers.path += $$INSTALL_ROOT/usr/include/mlite$${NODASH_QT_VERSION}
+headers.path += /usr/include/mlite$${NODASH_QT_VERSION}
 
 target.path += $$[QT_INSTALL_LIBS]
 

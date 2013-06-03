@@ -88,7 +88,7 @@ void UtMGConfItem::basicTest()
     QCOMPARE(spy2.count(), 1);
 
     waitForSignal(&item1, SIGNAL(valueChanged()));
-    QCOMPARE(item1.value(), value1);
+    QTRY_COMPARE(item1.value(), value1);
 
     QCOMPARE(MGConfItem(KEY).value(), value1);
 
@@ -98,7 +98,7 @@ void UtMGConfItem::basicTest()
     QCOMPARE(spy1.count(), 1);
 
     waitForSignal(&item2, SIGNAL(valueChanged()));
-    QCOMPARE(item2.value(), value2);
+    QTRY_COMPARE(item2.value(), value2);
 
     QCOMPARE(MGConfItem(KEY).value(), value2);
 }
@@ -106,7 +106,7 @@ void UtMGConfItem::basicTest()
 void UtMGConfItem::defaultValue()
 {
     MGConfItem(KEY).unset();
-    QCOMPARE(MGConfItem(KEY).value("default").toString(), QString("default"));
+    QTRY_COMPARE(MGConfItem(KEY).value("default").toString(), QString("default"));
 }
 
 QTEST_MAIN(Tests::UtMGConfItem)

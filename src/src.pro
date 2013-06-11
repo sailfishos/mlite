@@ -1,3 +1,5 @@
+include(../common.pri)
+
 isEmpty(VERSION) {
     GIT_TAG = $$system(git describe --tags --abbrev=0)
     GIT_VERSION = $$find(GIT_TAG, ^\\d+(\\.\\d+)?(\\.\\d+)?$)
@@ -12,8 +14,7 @@ isEmpty(VERSION) {
 }
 
 QT     = core dbus
-equals(QT_MAJOR_VERSION, 4): TARGET = $$qtLibraryTarget(mlite)
-equals(QT_MAJOR_VERSION, 5): TARGET = $$qtLibraryTarget(mlite5)
+TARGET = $$qtLibraryTarget(mlite$${NODASH_QT_VERSION})
 TEMPLATE = lib
 
 CONFIG += link_pkgconfig
@@ -76,8 +77,7 @@ DEFINES += MLITE_LIBRARY
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
 
-equals(QT_MAJOR_VERSION, 4): PCFILE=mlite.pc
-equals(QT_MAJOR_VERSION, 5): PCFILE=mlite5.pc
+PCFILE=mlite$${NODASH_QT_VERSION}.pc
 
 # substitutions
 system(cp $${PCFILE}.in $$PCFILE)
@@ -87,8 +87,7 @@ pcfiles.files = $$PCFILE
 pcfiles.path += $$INSTALL_ROOT/$$[QT_INSTALL_LIBS]/pkgconfig
 
 headers.files += $$INSTALL_HEADERS
-equals(QT_MAJOR_VERSION, 4): headers.path += $$INSTALL_ROOT/usr/include/mlite
-equals(QT_MAJOR_VERSION, 5): headers.path += $$INSTALL_ROOT/usr/include/mlite5
+headers.path += $$INSTALL_ROOT/usr/include/mlite$${NODASH_QT_VERSION}
 
 target.path += $$[QT_INSTALL_LIBS]
 

@@ -12,6 +12,7 @@ isEmpty(VERSION) {
     }
     !isEmpty(GIT_VERSION): VERSION = $$GIT_VERSION
 }
+CONFIG_SUBST += VERSION
 
 QT     = core dbus
 TARGET = $$qtLibraryTarget(mlite$${NODASH_QT_VERSION})
@@ -78,12 +79,9 @@ OBJECTS_DIR = .obj
 MOC_DIR = .moc
 
 PCFILE=mlite$${NODASH_QT_VERSION}.pc
-
-# substitutions
-system(cp $${PCFILE}.in $$PCFILE)
-system(sed -i "s/\\@VERSION\\@/$$VERSION/g" $$PCFILE)
-
+configure($${PWD}/$${PCFILE}.in)
 pcfiles.files = $$PCFILE
+pcfiles.CONFIG = no_check_exist
 pcfiles.path += $$INSTALL_ROOT/$$[QT_INSTALL_LIBS]/pkgconfig
 
 headers.files += $$INSTALL_HEADERS

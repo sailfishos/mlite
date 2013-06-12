@@ -75,9 +75,6 @@ HEADERS += $$INSTALL_HEADERS
 
 DEFINES += MLITE_LIBRARY
 
-OBJECTS_DIR = .obj
-MOC_DIR = .moc
-
 PCFILE=mlite$${NODASH_QT_VERSION}.pc
 configure($${PWD}/$${PCFILE}.in)
 pcfiles.files = $$PCFILE

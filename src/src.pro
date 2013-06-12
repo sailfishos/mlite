@@ -71,7 +71,7 @@ INSTALL_HEADERS += mnotification.h \
                    mfiledatastore.h \
                    MDesktopEntry
 
-HEADERS += $$INSTALL_HEADERS
+HEADERS *= $$INSTALL_HEADERS
 
 DEFINES += MLITE_LIBRARY
 

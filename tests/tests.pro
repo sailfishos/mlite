@@ -2,6 +2,7 @@ include(tests_common.pri)
 
 TEMPLATE = subdirs
 SUBDIRS = \
+        ut_mdesktopentry.pro \
         ut_mfiledatastore.pro \
 
 configure($${PWD}/tests.xml.in)

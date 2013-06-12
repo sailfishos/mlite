@@ -7,6 +7,11 @@
 
             <description>mlite@DASH_QT_VERSION@ tests</description>
 
+            <case name="ut_mdesktopentry">
+                <description>Tests the MDesktopEntry class</description>
+                <step>@INSTALL_TESTDIR@/ut_mdesktopentry</step>
+            </case>
+
             <case name="ut_mfiledatastore">
                 <description>Tests the MFileDataStore class</description>
                 <step>@INSTALL_TESTDIR@/ut_mfiledatastore</step>

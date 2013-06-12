@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<testdefinition version="0.1">
+
+    <suite name="mlite">
+
+        <set name="mlite@DASH_QT_VERSION@">
+
+            <description>mlite@DASH_QT_VERSION@ tests</description>
+
+            <case name="ut_mfiledatastore">
+                <description>Tests the MFileDataStore class</description>
+                <step>@INSTALL_TESTDIR@/ut_mfiledatastore</step>
+            </case>
+
+        </set>
+
+    </suite>
+
+</testdefinition>

@@ -4,6 +4,7 @@ TEMPLATE = subdirs
 SUBDIRS = \
         ut_mdesktopentry.pro \
         ut_mfiledatastore.pro \
+        ut_mnotification.pro \
         ut_mremoteaction.pro \
 
 configure($${PWD}/tests.xml.in)

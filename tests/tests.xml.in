@@ -17,6 +17,11 @@
                 <step>@INSTALL_TESTDIR@/ut_mfiledatastore</step>
             </case>
 
+            <case name="ut_mnotification">
+                <description>Tests the MNotification and MNotificationGroup classes</description>
+                <step>@INSTALL_TESTDIR@/ut_mnotification</step>
+            </case>
+
             <case name="ut_mremoteaction">
                 <description>Tests the MRemoteAction class</description>
                 <step>@INSTALL_TESTDIR@/ut_mremoteaction</step>

@@ -9,7 +9,7 @@ Name:       mlite
 # << macros
 
 Summary:    Useful classes originating from MeeGo Touch
-Version:    0.1.4
+Version:    0.1.5
 Release:    1
 Group:      System/Libraries
 License:    LGPL v2.1

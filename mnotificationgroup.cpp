@@ -113,7 +113,24 @@ void MNotificationGroup::setTimestamp(const QDateTime &)
 
 bool MNotificationGroup::publish()
 {
-    return publish(QString(), QString());
+    Q_D(MNotificationGroup);
+
+    QString previewSummary;
+    QString previewBody;
+    if (d->id != 0) {
+        // If the group already exists, use the existing preview summary and body
+        QList<MNotificationGroup *> groups = MNotificationGroup::notificationGroups();
+        foreach (MNotificationGroup *group, groups) {
+            if (group->id() == d->id) {
+                previewSummary = group->property("previewSummary").toString();
+                previewBody = group->property("previewBody").toString();
+                break;
+            }
+        }
+        qDeleteAll(groups);
+    }
+
+    return publish(previewSummary, previewBody);
 }
 
 bool MNotificationGroup::publish(const QString &previewSummary, const QString &previewBody)

@@ -265,12 +265,13 @@ bool MNotification::publish()
     QVariantHash hints = d->hints();
     QString summary;
     QString body;
+    bool newNotification = d->id == 0;
     if (d->groupId == 0) {
         // Standalone notifications use the same summary and body for the lock screen - show nothing for grouped notifications
         summary = hints.value("x-nemo-legacy-summary").toString();
         body = hints.value("x-nemo-legacy-body").toString();
 
-        if (d->id == 0) {
+        if (newNotification) {
             // Only show the preview banner for new notifications
             hints.insert("x-nemo-preview-summary", hints.value("x-nemo-legacy-summary"));
             hints.insert("x-nemo-preview-body", hints.value("x-nemo-legacy-body"));
@@ -285,7 +286,9 @@ bool MNotification::publish()
 
     d->userSetTimestamp = QDateTime();
 
-    d->publishGroup();
+    if (newNotification) {
+        d->publishGroup();
+    }
 
     return d->id != 0;
 }
@@ -372,6 +375,8 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, MNotification &no
     notification.d_ptr->identifier = hints.value("x-nemo-legacy-identifier").toString();
     notification.d_ptr->groupId = hints.value("x-nemo-legacy-group-id").toUInt();
     notification.setProperty("legacyType", hints.value("x-nemo-legacy-type"));
+    notification.setProperty("previewSummary", hints.value("x-nemo-preview-summary"));
+    notification.setProperty("previewBody", hints.value("x-nemo-preview-body"));
 
     return argument;
 }
@@ -392,5 +397,7 @@ MNotification &MNotification::operator=(const MNotification &notification)
     d->userSetTimestamp = dn->userSetTimestamp;
     d->publishedTimestamp = dn->publishedTimestamp;
     setProperty("legacyType", notification.property("legacyType"));
+    setProperty("previewSummary", notification.property("previewSummary"));
+    setProperty("previewBody", notification.property("previewBody"));
     return *this;
 }

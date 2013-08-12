@@ -20,6 +20,7 @@ Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Core)
+BuildRequires:  pkgconfig(Qt5Test)
 BuildRequires:  pkgconfig(gconf-2.0)
 
 %description
@@ -68,7 +69,7 @@ make %{?jobs:-j%jobs}
 rm -rf %{buildroot}
 # >> install pre
 # << install pre
-%qmake_install
+%qmake5_install
 
 # >> install post
 # << install post

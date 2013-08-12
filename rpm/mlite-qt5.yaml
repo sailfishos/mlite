@@ -13,6 +13,7 @@ Description: |
 PkgConfigBR:
     - Qt5DBus
     - Qt5Core
+    - Qt5Test
     - gconf-2.0
 Configure: none
 Builder: qmake5

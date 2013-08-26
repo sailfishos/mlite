@@ -277,6 +277,16 @@ QString MDesktopEntry::value(const QString &group, const QString &key) const
     return d_ptr->desktopEntriesMap.value(group + '/' + key);
 }
 
+QStringList MDesktopEntry::stringListValue(const QString &key) const
+{
+    return d_ptr->stringListValue(key);
+}
+
+QStringList MDesktopEntry::stringListValue(const QString &group, const QString &key) const
+{
+    return d_ptr->stringListValue(group + '/' + key);
+}
+
 bool MDesktopEntry::isValid() const
 {
     // The Type and Name keys always have to be present

@@ -205,7 +205,7 @@ public:
     QString xMaemoService() const;
 
     /*!
-     * Returns the value of the key- key or an empty string if it is
+     * Returns the value of the key or an empty string if it is
      * not defined in the input desktop entry file.
      */
     QString value(const QString &key) const;
@@ -215,6 +215,18 @@ public:
      * key or an empty string if it is not defined in the input desktop entry file.
      */
     QString value(const QString &group, const QString &key) const;
+
+    /*!
+     * Returns the value of the key or an empty string list if it is
+     * not defined in the input desktop entry file.
+     */
+    QStringList stringListValue(const QString &key) const;
+
+    /*!
+     * Returns the value of the group-key stored as "group/key"
+     * key or an empty string list if it is not defined in the input desktop entry file.
+     */
+    QStringList stringListValue(const QString &group, const QString &key) const;
 
     /*!
      * Indicates whether map contains key or not.

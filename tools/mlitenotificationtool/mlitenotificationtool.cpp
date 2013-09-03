@@ -28,7 +28,6 @@
 #include <QString>
 #include <QStringList>
 #include <QRegExp>
-#include <QApplication>
 #include <QDateTime>
 
 // Subclasses to gain access to the IDs

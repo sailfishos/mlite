@@ -1,9 +1,9 @@
 TEMPLATE = app
 TARGET = mlitenotificationtool
-INCLUDEPATH += ../..
+INCLUDEPATH += ../../src
 DEPENDPATH += $$INCLUDEPATH
 
-QMAKE_LIBDIR = ../..
+QMAKE_LIBDIR = ../../src
 LIBS = -lmlite
 
 SOURCES += mlitenotificationtool.cpp

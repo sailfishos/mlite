@@ -4,7 +4,8 @@ INCLUDEPATH += ../../src
 DEPENDPATH += $$INCLUDEPATH
 
 QMAKE_LIBDIR = ../../src
-LIBS = -lmlite
+equals(QT_MAJOR_VERSION, 4): LIBS = -lmlite
+equals(QT_MAJOR_VERSION, 5): LIBS = -lmlite5
 
 SOURCES += mlitenotificationtool.cpp
 INSTALLS += target

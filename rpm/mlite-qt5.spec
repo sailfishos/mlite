@@ -9,7 +9,7 @@ Name:       mlite-qt5
 # << macros
 
 Summary:    Useful classes originating from MeeGo Touch
-Version:    0.2.2
+Version:    0.2.3
 Release:    1
 Group:      System/Libraries
 License:    LGPL v2.1
@@ -60,7 +60,7 @@ export QT_SELECT=5
 %qmake5  \
     VERSION=%{version}
 
-make %{?jobs:-j%jobs}
+make %{?_smp_mflags}
 
 # >> build post
 # << build post

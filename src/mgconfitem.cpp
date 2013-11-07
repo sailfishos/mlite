@@ -73,8 +73,8 @@ static QByteArray convertKey(const QString &key)
     else {
         QString replaced = key;
         replaced.replace('.', '/');
-        qDebug() << "Using dot-separated key names with MGConfItem is deprecated.";
-        qDebug() << "Please use" << '/' + replaced << "instead of" << key;
+        qWarning() << "Using dot-separated key names with MGConfItem is deprecated.";
+        qWarning() << "Please use" << '/' + replaced << "instead of" << key;
         return '/' + replaced.toUtf8();
     }
 }
@@ -243,7 +243,7 @@ void MGConfItem::update_value(bool emit_signal)
         GConfValue *v = gconf_client_get(client, k.data(), &error);
 
         if (error) {
-            qDebug() << error->message;
+            qWarning() << error->message;
             g_error_free(error);
             new_value = priv->value;
         } else {
@@ -294,7 +294,7 @@ void MGConfItem::set(const QVariant &val)
             }
 
             if (error) {
-                qDebug() << error->message;
+                qWarning() << error->message;
                 g_error_free(error);
             } else if (priv->value != val) {
                 priv->value = val;
@@ -302,7 +302,7 @@ void MGConfItem::set(const QVariant &val)
             }
 
         } else
-            qDebug() << "Can't store a" << val.typeName();
+            qWarning() << "Can't store a" << val.typeName();
     }
 }
 
@@ -320,7 +320,7 @@ QStringList MGConfItem::listDirs() const
         GError *error = NULL;
         GSList *dirs = gconf_client_all_dirs(client, k.data(), &error);
         if (error) {
-            qDebug() << "MGConfItem" << error->message;
+            qWarning() << "MGConfItem" << error->message;
             g_error_free(error);
             return children;
         }
@@ -333,6 +333,23 @@ QStringList MGConfItem::listDirs() const
     }
 
     return children;
+}
+
+bool MGConfItem::sync()
+{
+    withClient(client) {
+        GError *error = NULL;
+        gconf_client_suggest_sync(client, &error);
+
+        if (error) {
+            qWarning() << error->message;
+            g_error_free(error);
+            return false;
+        }
+
+        return true;
+    }
+    return false;
 }
 
 MGConfItem::MGConfItem(const QString &key, QObject *parent)
@@ -353,7 +370,7 @@ MGConfItem::MGConfItem(const QString &key, QObject *parent)
         }
 
         if(error) {
-            qDebug() << error->message;
+            qWarning() << error->message;
             g_error_free(error);
             return;
         }
@@ -361,7 +378,7 @@ MGConfItem::MGConfItem(const QString &key, QObject *parent)
                           MGConfItemPrivate::notify_trampoline, this,
                           NULL, &error);
         if(error) {
-            qDebug() << error->message;
+            qWarning() << error->message;
             g_error_free(error);
             priv->have_gconf = false;
             return;
@@ -387,7 +404,7 @@ MGConfItem::~MGConfItem()
             gconf_client_remove_dir(client, k.data(), &error);
 
             if(error) {
-                qDebug() << error->message;
+                qWarning() << error->message;
                 g_error_free(error);
                 //return; // or priv not deleted
             }

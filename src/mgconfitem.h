@@ -122,6 +122,13 @@ public:
     */
     QStringList listDirs() const;
 
+    /*! Request gconf to sync value(s) which are not yet synced to the cache.
+        Sometimes values may not be synced because eventually this just hints
+        gconf to start sync.
+
+        Returns true if there's no errors and false on error.
+    */
+    bool sync();
 
 Q_SIGNALS:
     /*! Emitted when the value of this item has changed.

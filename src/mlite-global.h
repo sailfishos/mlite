@@ -1,5 +1,5 @@
-#ifndef GLOBAL_H
-#define GLOBAL_H
+#ifndef MLITE_GLOBAL_H
+#define MLITE_GLOBAL_H
 
 #include <QtCore/qglobal.h>
 

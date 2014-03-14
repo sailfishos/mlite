@@ -27,37 +27,37 @@
 
 /*!
 
-  \brief MGConfItem is a simple C++ wrapper for GConf.
+  \brief MGConfItem is a simple C++ wrapper for dcconf.
 
-  Creating a MGConfItem instance gives you access to a single GConf
+  Creating a MGConfItem instance gives you access to a single dconf
   key.  You can get and set its value, and connect to its
   valueChanged() signal to be notified about changes.
 
-  The value of a GConf key is returned to you as a QVariant, and you
+  The value of a dconf key is returned to you as a QVariant, and you
   pass in a QVariant when setting the value.  MGConfItem converts
-  between a QVariant and GConf values as needed, and according to the
+  between a QVariant and dconf values as needed, and according to the
   following rules:
 
-  - A QVariant of type QVariant::Invalid denotes an unset GConf key.
+  - A QVariant of type QVariant::Invalid denotes an unset dconf key.
 
   - QVariant::Int, QVariant::Double, QVariant::Bool are converted to
     and from the obvious equivalents.
 
-  - QVariant::String is converted to/from a GConf string and always
+  - QVariant::String is converted to/from a dconf string and always
     uses the UTF-8 encoding.  No other encoding is supported.
 
   - QVariant::StringList is converted to a list of UTF-8 strings.
 
   - QVariant::List (which denotes a QList<QVariant>) is converted
-    to/from a GConf list.  All elements of such a list must have the
+    to/from a dconf list.  All elements of such a list must have the
     same type, and that type must be one of QVariant::Int,
     QVariant::Double, QVariant::Bool, or QVariant::String.  (A list of
     strings is returned as a QVariant::StringList, however, when you
     get it back.)
 
-  - Any other QVariant or GConf value is essentially ignored.
+  - Any other QVariant or dconf value is essentially ignored.
 
-  \warning MGConfItem is as thread-safe as GConf.
+  \warning MGConfItem is as thread-safe as dconf.
 
 */
 
@@ -66,8 +66,8 @@ class MLITESHARED_EXPORT MGConfItem : public QObject
     Q_OBJECT
 
 public:
-    /*! Initializes a MGConfItem to access the GConf key denoted by
-        \a key.  Key names should follow the normal GConf conventions
+    /*! Initializes a MGConfItem to access the dconf key denoted by
+        \a key.  Key names should follow the normal dconf conventions
         like "/myapp/settings/first".
 
         \param key    The name of the key.
@@ -93,7 +93,7 @@ public:
     QVariant value(const QVariant &def) const;
 
     /*! Set the value of this item to \a val.  If \a val can not be
-        represented in GConf or GConf refuses to accept it for other
+        represented in dconf or dconf refuses to accept it for other
         reasons, the current value is not changed and nothing happens.
 
         When the new value is different from the old value, the
@@ -122,9 +122,9 @@ public:
     */
     QStringList listDirs() const;
 
-    /*! Request gconf to sync value(s) which are not yet synced to the cache.
+    /*! Request dconf to sync value(s) which are not yet synced to the cache.
         Sometimes values may not be synced because eventually this just hints
-        gconf to start sync.
+        dconf to start sync.
 
         Returns true if there's no errors and false on error.
     */

@@ -14,7 +14,7 @@ Description: |
 PkgConfigBR:
     - QtDBus
     - QtCore
-    - gconf-2.0
+    - dconf
 Configure: none
 Builder: qmake
 QMakeOptions:

@@ -19,9 +19,9 @@ TARGET = $$qtLibraryTarget(mlite$${NODASH_QT_VERSION})
 TEMPLATE = lib
 
 CONFIG += link_pkgconfig
-packagesExist(gconf-2.0) {
-    PKGCONFIG += gconf-2.0
-    DEFINES += HAVE_GCONF
+packagesExist(dconf) {
+    PKGCONFIG += dconf
+    DEFINES += HAVE_DCONF
     HEADERS += mgconfitem.h \
                MGConfItem
     SOURCES += mgconfitem.cpp
@@ -30,7 +30,7 @@ packagesExist(gconf-2.0) {
                        MGConfItem
 
 } else {
-    warning("gconf-2.0 not found; MGConfItem will not be built")
+    warning("dconf not found; MGConfItem will not be built")
 }
 
 equals(QT_MAJOR_VERSION, 4) {

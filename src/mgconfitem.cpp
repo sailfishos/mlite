@@ -16,6 +16,11 @@
 **
 ****************************************************************************/
 
+// This has to be the first include otherwise gdbusintrospection.h causes an error.
+extern "C" {
+#include <dconf.h>
+};
+
 #include <QString>
 #include <QStringList>
 #include <QByteArray>
@@ -24,47 +29,18 @@
 
 #include "mgconfitem.h"
 
-#include <gconf/gconf-value.h>
-#include <gconf/gconf-client.h>
-
 struct MGConfItemPrivate {
     MGConfItemPrivate() :
-        notify_id(0),
-        have_gconf(false)
+        client(dconf_client_new()),
+	handler(0)
     {}
 
     QString key;
     QVariant value;
-    guint notify_id;
-    bool have_gconf;
-
-    static void notify_trampoline(GConfClient *, guint, GConfEntry *, gpointer);
+    DConfClient *client;
+    gulong handler;
+    static void notify_trampoline(DConfClient *, gchar *, GStrv, gchar *, gpointer);
 };
-
-/* We get the default client and never release it, on purpose, to
-   avoid disconnecting from the GConf daemon when a program happens to
-   not have any GConfItems for short periods of time.
- */
-static GConfClient *
-get_gconf_client ()
-{
-    static GConfClient *s_gconf_client = 0;
-    struct GConfClientDestroyer {
-        ~GConfClientDestroyer() { g_object_unref(s_gconf_client); s_gconf_client = 0; }
-    };
-
-    static GConfClientDestroyer gconfClientDestroyer;
-    if (s_gconf_client)
-        return s_gconf_client;
-
-    g_type_init();
-    s_gconf_client = gconf_client_get_default();
-
-    return s_gconf_client;
-}
-
-
-#define withClient(c) for (GConfClient *c = get_gconf_client (); c; c = NULL)
 
 static QByteArray convertKey(const QString &key)
 {
@@ -84,150 +60,143 @@ static QString convertKey(const char *key)
     return QString::fromUtf8(key);
 }
 
-static QVariant convertValue(GConfValue *src)
+static QVariant convertValue(GVariant *src)
 {
     if (!src) {
         return QVariant();
     } else {
-        switch (src->type) {
-        case GCONF_VALUE_INVALID:
-            return QVariant(QVariant::Invalid);
-        case GCONF_VALUE_BOOL:
-            return QVariant((bool)gconf_value_get_bool(src));
-        case GCONF_VALUE_INT:
-            return QVariant(gconf_value_get_int(src));
-        case GCONF_VALUE_FLOAT:
-            return QVariant(gconf_value_get_float(src));
-        case GCONF_VALUE_STRING:
-            return QVariant(QString::fromUtf8(gconf_value_get_string(src)));
-        case GCONF_VALUE_LIST:
-            switch (gconf_value_get_list_type(src)) {
-            case GCONF_VALUE_STRING: {
+        switch (g_variant_classify(src)) {
+        case G_VARIANT_CLASS_BOOLEAN:
+	    return QVariant((bool)g_variant_get_boolean(src));
+        case G_VARIANT_CLASS_INT32:
+            return QVariant(g_variant_get_int32(src));
+        case G_VARIANT_CLASS_DOUBLE:
+            return QVariant(g_variant_get_double(src));
+        case G_VARIANT_CLASS_STRING:
+	    return QVariant(QString::fromUtf8(g_variant_get_string(src, NULL)));
+        case G_VARIANT_CLASS_ARRAY: {
+	    if (g_variant_type_equal(g_variant_get_type(src), G_VARIANT_TYPE_STRING_ARRAY)) {
                 QStringList result;
-                for (GSList *elts = gconf_value_get_list(src); elts; elts = elts->next)
-                    result.append(QString::fromUtf8(gconf_value_get_string((GConfValue *)elts->data)));
-                return QVariant(result);
-            }
-            default: {
-                QList<QVariant> result;
-                for (GSList *elts = gconf_value_get_list(src); elts; elts = elts->next)
-                    result.append(convertValue((GConfValue *)elts->data));
-                return QVariant(result);
-            }
-            }
-        case GCONF_VALUE_SCHEMA:
+		for (uint x = 0; x < g_variant_n_children(src); x++) {
+		    GVariant *child = g_variant_get_child_value(src, x);
+		    result.append(QString::fromUtf8(g_variant_get_string(child, NULL)));
+		    g_variant_unref(child);
+		}
+		return QVariant(result);
+	    } else {
+	        QList<QVariant> result;
+		for (uint x = 0; x < g_variant_n_children(src); x++) {
+		    GVariant *child = g_variant_get_child_value(src, x);
+		    result.append(convertValue(child));
+		    g_variant_unref(child);
+		}
+	        return QVariant(result);
+	    }
+	}
+
         default:
             return QVariant();
         }
     }
 }
 
-static GConfValue *convertString(const QString &str)
-{
-    GConfValue *v = gconf_value_new(GCONF_VALUE_STRING);
-    gconf_value_set_string(v, str.toUtf8().data());
-    return v;
-}
-
-static GConfValueType primitiveType(const QVariant &elt)
+static const GVariantType *primitiveType(const QVariant &elt)
 {
     switch (elt.type()) {
     case QVariant::String:
-        return GCONF_VALUE_STRING;
+        return G_VARIANT_TYPE_STRING;
     case QVariant::Int:
-        return GCONF_VALUE_INT;
+        return G_VARIANT_TYPE_INT32;
     case QVariant::Double:
-        return GCONF_VALUE_FLOAT;
+        return G_VARIANT_TYPE_DOUBLE;
     case QVariant::Bool:
-        return GCONF_VALUE_BOOL;
+        return G_VARIANT_TYPE_BOOLEAN;
     default:
-        return GCONF_VALUE_INVALID;
+        return NULL;
     }
 }
 
-static GConfValueType uniformType(const QList<QVariant> &list)
+static const GVariantType *uniformType(const QList<QVariant> &list)
 {
-    GConfValueType result = GCONF_VALUE_INVALID;
+    const GVariantType *result = NULL;
 
     foreach(const QVariant & elt, list) {
-        GConfValueType elt_type = primitiveType(elt);
+        const GVariantType *elt_type = primitiveType(elt);
 
-        if (elt_type == GCONF_VALUE_INVALID)
-            return GCONF_VALUE_INVALID;
+        if (elt_type == NULL)
+            return NULL;
 
-        if (result == GCONF_VALUE_INVALID)
+        if (result == NULL)
             result = elt_type;
         else if (result != elt_type)
-            return GCONF_VALUE_INVALID;
+            return NULL;
     }
 
-    if (result == GCONF_VALUE_INVALID)
-        return GCONF_VALUE_STRING;  // empty list.
+    if (result == NULL)
+        return G_VARIANT_TYPE_ARRAY;  // empty list.
     else
         return result;
 }
 
-static int convertValue(const QVariant &src, GConfValue **valp)
+static bool convertValue(const QVariant &src, GVariant **valp)
 {
-    GConfValue *v;
+    GVariant *v = NULL;
 
     switch (src.type()) {
     case QVariant::Invalid:
         v = NULL;
         break;
     case QVariant::Bool:
-        v = gconf_value_new(GCONF_VALUE_BOOL);
-        gconf_value_set_bool(v, src.toBool());
+        v = g_variant_new_boolean(src.toBool());
         break;
     case QVariant::Int:
-        v = gconf_value_new(GCONF_VALUE_INT);
-        gconf_value_set_int(v, src.toInt());
+        v = g_variant_new_int32(src.toInt());
         break;
     case QVariant::Double:
-        v = gconf_value_new(GCONF_VALUE_FLOAT);
-        gconf_value_set_float(v, src.toDouble());
+        v = g_variant_new_double(src.toDouble());
         break;
     case QVariant::String:
-        v = convertString(src.toString());
+        v = g_variant_new_string(src.toString().toUtf8().data());
         break;
     case QVariant::StringList: {
-        GSList *elts = NULL;
-        v = gconf_value_new(GCONF_VALUE_LIST);
-        gconf_value_set_list_type(v, GCONF_VALUE_STRING);
-        foreach(const QString & str, src.toStringList())
-        elts = g_slist_prepend(elts, convertString(str));
-        gconf_value_set_list_nocopy(v, g_slist_reverse(elts));
-        break;
+        if (src.toStringList().isEmpty()) {
+	    v = g_variant_new_array(G_VARIANT_TYPE_STRING, NULL, 0);
+	} else {
+	    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_ARRAY);
+	    foreach (const QString & str, src.toStringList())
+	        g_variant_builder_add_value(builder, g_variant_new_string(str.toUtf8().data()));
+	    v = g_variant_builder_end(builder);
+	    g_variant_builder_unref(builder);
+	}
+	break;
     }
     case QVariant::List: {
-        GConfValueType elt_type = uniformType(src.toList());
-        if (elt_type == GCONF_VALUE_INVALID)
+        const GVariantType *elt_type = uniformType(src.toList());
+
+        if (elt_type == NULL)
             v = NULL;
         else {
-            GSList *elts = NULL;
-            v = gconf_value_new(GCONF_VALUE_LIST);
-            gconf_value_set_list_type(v, elt_type);
+	    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_ARRAY);
             foreach(const QVariant & elt, src.toList()) {
-                GConfValue *val = NULL;
+                GVariant *val = NULL;
                 convertValue(elt, &val);  // guaranteed to succeed.
-                elts = g_slist_prepend(elts, val);
+	        g_variant_builder_add_value(builder, val);
             }
-            gconf_value_set_list_nocopy(v, g_slist_reverse(elts));
+
+	    v = g_variant_builder_end(builder);
+	    g_variant_builder_unref(builder);
         }
         break;
     }
     default:
-        return 0;
+        return false;
     }
 
     *valp = v;
-    return 1;
+    return true;
 }
 
-void MGConfItemPrivate::notify_trampoline(GConfClient *,
-        guint,
-        GConfEntry *,
-        gpointer data)
+void MGConfItemPrivate::notify_trampoline(DConfClient *, gchar *, GStrv, gchar *, gpointer data)
 {
     MGConfItem *item = (MGConfItem *)data;
     item->update_value(true);
@@ -236,22 +205,16 @@ void MGConfItemPrivate::notify_trampoline(GConfClient *,
 void MGConfItem::update_value(bool emit_signal)
 {
     QVariant new_value;
-
-    withClient(client) {
-        GError *error = NULL;
-        QByteArray k = convertKey(priv->key);
-        GConfValue *v = gconf_client_get(client, k.data(), &error);
-
-        if (error) {
-            qWarning() << error->message;
-            g_error_free(error);
-            new_value = priv->value;
-        } else {
-            new_value = convertValue(v);
-            if (v)
-                gconf_value_free(v);
-        }
+    QByteArray k = convertKey(priv->key);
+    GVariant *v = dconf_client_read(priv->client, k.data());
+    if (!v) {
+        qWarning() << "MGConfItem Failed to read" << priv->key;
+	new_value = priv->value;
     }
+
+    new_value = convertValue(v);
+    if (v)
+        g_variant_unref(v);
 
     if (new_value != priv->value) {
         priv->value = new_value;
@@ -280,30 +243,24 @@ QVariant MGConfItem::value(const QVariant &def) const
 
 void MGConfItem::set(const QVariant &val)
 {
-    withClient(client) {
-        QByteArray k = convertKey(priv->key);
-        GConfValue *v;
-        if (convertValue(val, &v)) {
-            GError *error = NULL;
+    QByteArray k = convertKey(priv->key);
+    GVariant *v = NULL;
+    GError *error = NULL;
 
-            if (v) {
-                gconf_client_set(client, k.data(), v, &error);
-                gconf_value_free(v);
-            } else {
-                gconf_client_unset(client, k.data(), &error);
-            }
+    if (convertValue(val, &v)) {
+	dconf_client_write_fast(priv->client, k.data(), v, &error);
+	if (v) {
+	    g_variant_unref(v);
+	}
 
-            if (error) {
-                qWarning() << error->message;
-                g_error_free(error);
-            } else if (priv->value != val) {
-                priv->value = val;
-                emit valueChanged();
-            }
+	if (error) {
+	    qWarning() << error->message;
+	    g_error_free(error);
+	}
 
-        } else
-            qWarning() << "Can't store a" << val.typeName();
-    }
+	// We will not emit any signals because dconf should take care of that for us.
+    } else
+        qWarning() << "Can't store a" << val.typeName();
 }
 
 void MGConfItem::unset()
@@ -314,42 +271,32 @@ void MGConfItem::unset()
 QStringList MGConfItem::listDirs() const
 {
     QStringList children;
+    gint length = 0;
+    QByteArray k = convertKey(priv->key);
+    gchar **dirs = dconf_client_list(priv->client, k.data(), &length);
+    GError *error = NULL;
 
-    withClient(client) {
-        QByteArray k = convertKey(priv->key);
-        GError *error = NULL;
-        GSList *dirs = gconf_client_all_dirs(client, k.data(), &error);
-        if (error) {
-            qWarning() << "MGConfItem" << error->message;
-            g_error_free(error);
-            return children;
-        }
+    for (gint x = 0; x < length; x++) {
+      if (dconf_is_dir(dirs[x], &error)) {
+	children.append(convertKey(dirs[x]));
+      }
 
-        for (GSList *d = dirs; d; d = d->next) {
-            children.append(convertKey((char *)d->data));
-            g_free(d->data);
-        }
-        g_slist_free(dirs);
+      // If we have error set then dconf_is_dir() has returned false so we should be safe here
+      if (error) {
+	qWarning() << "MGConfItem" << error->message;
+	g_error_free(error);
+      }
     }
+
+    g_strfreev(dirs);
 
     return children;
 }
 
 bool MGConfItem::sync()
 {
-    withClient(client) {
-        GError *error = NULL;
-        gconf_client_suggest_sync(client, &error);
-
-        if (error) {
-            qWarning() << error->message;
-            g_error_free(error);
-            return false;
-        }
-
-        return true;
-    }
-    return false;
+    dconf_client_sync(priv->client);
+    return true;
 }
 
 MGConfItem::MGConfItem(const QString &key, QObject *parent)
@@ -357,58 +304,19 @@ MGConfItem::MGConfItem(const QString &key, QObject *parent)
 {
     priv = new MGConfItemPrivate;
     priv->key = key;
-    withClient(client) {
-        QByteArray k = convertKey(priv->key);
-        GError *error = NULL;
+    priv->handler =
+      g_signal_connect(priv->client, "changed", G_CALLBACK(MGConfItemPrivate::notify_trampoline), this);
 
-        int index = k.lastIndexOf('/');
-        if (index > 0) {
-            QByteArray dir = k.left(index);
-            gconf_client_add_dir(client, dir.data(), GCONF_CLIENT_PRELOAD_ONELEVEL, &error);
-        } else {
-            gconf_client_add_dir(client, k.data(), GCONF_CLIENT_PRELOAD_NONE, &error);
-        }
-
-        if(error) {
-            qWarning() << error->message;
-            g_error_free(error);
-            return;
-        }
-        priv->notify_id = gconf_client_notify_add(client, k.data(),
-                          MGConfItemPrivate::notify_trampoline, this,
-                          NULL, &error);
-        if(error) {
-            qWarning() << error->message;
-            g_error_free(error);
-            priv->have_gconf = false;
-            return;
-        }
-        priv->have_gconf = true;
-        update_value(false);
-    }
+    QByteArray k = convertKey(priv->key);
+    dconf_client_watch_fast(priv->client, k.data());
+    update_value(false);
 }
 
 MGConfItem::~MGConfItem()
 {
-    if(priv->have_gconf) {
-        withClient(client) {
-            QByteArray k = convertKey(priv->key);
-            gconf_client_notify_remove(client, priv->notify_id);
-            GError *error = NULL;
-
-            // Use the same dir as in ctor
-            int index = k.lastIndexOf('/');
-            if (index > 0) {
-                k = k.left(index);
-            }
-            gconf_client_remove_dir(client, k.data(), &error);
-
-            if(error) {
-                qWarning() << error->message;
-                g_error_free(error);
-                //return; // or priv not deleted
-            }
-        }
-    }
+    g_signal_handler_disconnect(priv->client, priv->handler);
+    QByteArray k = convertKey(priv->key);
+    dconf_client_unwatch_fast(priv->client, k.data());
+    g_object_unref(priv->client);
     delete priv;
 }

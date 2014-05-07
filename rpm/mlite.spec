@@ -20,7 +20,7 @@ Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(QtDBus)
 BuildRequires:  pkgconfig(QtCore)
-BuildRequires:  pkgconfig(gconf-2.0)
+BuildRequires:  pkgconfig(dconf)
 
 %description
 Select set of useful classes from meegotouch that do not require

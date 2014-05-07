@@ -29,6 +29,8 @@ extern "C" {
 
 #include "mgconfitem.h"
 
+#include "mdconf_p.h"
+
 struct MGConfItemPrivate {
     MGConfItemPrivate() :
         client(dconf_client_new()),
@@ -60,142 +62,6 @@ static QString convertKey(const char *key)
     return QString::fromUtf8(key);
 }
 
-static QVariant convertValue(GVariant *src)
-{
-    if (!src) {
-        return QVariant();
-    } else {
-        switch (g_variant_classify(src)) {
-        case G_VARIANT_CLASS_BOOLEAN:
-	    return QVariant((bool)g_variant_get_boolean(src));
-        case G_VARIANT_CLASS_INT32:
-            return QVariant(g_variant_get_int32(src));
-        case G_VARIANT_CLASS_DOUBLE:
-            return QVariant(g_variant_get_double(src));
-        case G_VARIANT_CLASS_STRING:
-	    return QVariant(QString::fromUtf8(g_variant_get_string(src, NULL)));
-        case G_VARIANT_CLASS_ARRAY: {
-	    if (g_variant_type_equal(g_variant_get_type(src), G_VARIANT_TYPE_STRING_ARRAY)) {
-                QStringList result;
-		for (uint x = 0; x < g_variant_n_children(src); x++) {
-		    GVariant *child = g_variant_get_child_value(src, x);
-		    result.append(QString::fromUtf8(g_variant_get_string(child, NULL)));
-		    g_variant_unref(child);
-		}
-		return QVariant(result);
-	    } else {
-	        QList<QVariant> result;
-		for (uint x = 0; x < g_variant_n_children(src); x++) {
-		    GVariant *child = g_variant_get_child_value(src, x);
-		    result.append(convertValue(child));
-		    g_variant_unref(child);
-		}
-	        return QVariant(result);
-	    }
-	}
-
-        default:
-            return QVariant();
-        }
-    }
-}
-
-static const GVariantType *primitiveType(const QVariant &elt)
-{
-    switch (elt.type()) {
-    case QVariant::String:
-        return G_VARIANT_TYPE_STRING;
-    case QVariant::Int:
-        return G_VARIANT_TYPE_INT32;
-    case QVariant::Double:
-        return G_VARIANT_TYPE_DOUBLE;
-    case QVariant::Bool:
-        return G_VARIANT_TYPE_BOOLEAN;
-    default:
-        return NULL;
-    }
-}
-
-static const GVariantType *uniformType(const QList<QVariant> &list)
-{
-    const GVariantType *result = NULL;
-
-    foreach(const QVariant & elt, list) {
-        const GVariantType *elt_type = primitiveType(elt);
-
-        if (elt_type == NULL)
-            return NULL;
-
-        if (result == NULL)
-            result = elt_type;
-        else if (result != elt_type)
-            return NULL;
-    }
-
-    if (result == NULL)
-        return G_VARIANT_TYPE_ARRAY;  // empty list.
-    else
-        return result;
-}
-
-static bool convertValue(const QVariant &src, GVariant **valp)
-{
-    GVariant *v = NULL;
-
-    switch (src.type()) {
-    case QVariant::Invalid:
-        v = NULL;
-        break;
-    case QVariant::Bool:
-        v = g_variant_new_boolean(src.toBool());
-        break;
-    case QVariant::Int:
-        v = g_variant_new_int32(src.toInt());
-        break;
-    case QVariant::Double:
-        v = g_variant_new_double(src.toDouble());
-        break;
-    case QVariant::String:
-        v = g_variant_new_string(src.toString().toUtf8().data());
-        break;
-    case QVariant::StringList: {
-        if (src.toStringList().isEmpty()) {
-	    v = g_variant_new_array(G_VARIANT_TYPE_STRING, NULL, 0);
-	} else {
-	    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_ARRAY);
-	    foreach (const QString & str, src.toStringList())
-	        g_variant_builder_add_value(builder, g_variant_new_string(str.toUtf8().data()));
-	    v = g_variant_builder_end(builder);
-	    g_variant_builder_unref(builder);
-	}
-	break;
-    }
-    case QVariant::List: {
-        const GVariantType *elt_type = uniformType(src.toList());
-
-        if (elt_type == NULL)
-            v = NULL;
-        else {
-	    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_ARRAY);
-            foreach(const QVariant & elt, src.toList()) {
-                GVariant *val = NULL;
-                convertValue(elt, &val);  // guaranteed to succeed.
-	        g_variant_builder_add_value(builder, val);
-            }
-
-	    v = g_variant_builder_end(builder);
-	    g_variant_builder_unref(builder);
-        }
-        break;
-    }
-    default:
-        return false;
-    }
-
-    *valp = v;
-    return true;
-}
-
 void MGConfItemPrivate::notify_trampoline(DConfClient *, gchar *, GStrv, gchar *, gpointer data)
 {
     MGConfItem *item = (MGConfItem *)data;
@@ -212,11 +78,11 @@ void MGConfItem::update_value(bool emit_signal)
 	new_value = priv->value;
     }
 
-    new_value = convertValue(v);
+    new_value = MDConf::convertValue(v);
     if (v)
         g_variant_unref(v);
 
-    if (new_value != priv->value) {
+    if (new_value != priv->value || new_value.userType() != priv->value.userType()) {
         priv->value = new_value;
         if (emit_signal)
             emit valueChanged();
@@ -247,11 +113,8 @@ void MGConfItem::set(const QVariant &val)
     GVariant *v = NULL;
     GError *error = NULL;
 
-    if (convertValue(val, &v)) {
+    if (MDConf::convertValue(val, &v)) {
 	dconf_client_write_fast(priv->client, k.data(), v, &error);
-	if (v) {
-	    g_variant_unref(v);
-	}
 
 	if (error) {
 	    qWarning() << error->message;

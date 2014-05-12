@@ -8,6 +8,7 @@
 #include "testbase.h"
 
 #include <QColor>
+#include <QDebug>
 #include <QPoint>
 #include <QRect>
 #include <QSize>
@@ -41,6 +42,7 @@ private slots:
     void value_data() { propertyData(); }
     void value();
     void scopes();
+    void pathChangeInResolve();
 
 private:
     DConfClient *m_client;
@@ -141,6 +143,9 @@ public:
 
     using MDConfGroup::resolveMetaObject;
 
+public slots:
+    void updatePath();
+
 signals:
     void booleanPropertyChanged();
     void characterPropertyChanged();
@@ -192,6 +197,17 @@ private:
     QVariantMap m_variantmapProperty;
 };
 
+void TestConfGroup::updatePath()
+{
+    TestConfGroup *parent = qobject_cast<TestConfGroup *>(sender());
+    if (!parent) {
+        qWarning() << "updatePath was not connected to a TestConfGroup instance";
+        return;
+    }
+
+    setPath(parent->stringProperty());
+}
+
 }
 
 using namespace Tests;
@@ -203,18 +219,14 @@ void UtMDConfGroup::initTestCase()
 
 void UtMDConfGroup::cleanupTestCase()
 {
-    dconf_client_write_fast(m_client, "/mlite-tests/ut_mdconfgroup/scopes/scope1/nested/properties/", 0, 0);
-    dconf_client_write_fast(m_client, "/mlite-tests/ut_mdconfgroup/scopes/scope2/nested/properties/", 0, 0);
-    dconf_client_sync(m_client);
+    dconf_client_write_sync(m_client, "/mlite-tests/ut_mdconfgroup/scopes/", 0, 0, 0, 0);
     g_object_unref(m_client);
     m_client = 0;
 }
 
 void UtMDConfGroup::init()
 {
-    dconf_client_write_fast(m_client, "/mlite-tests/ut_mdconfgroup/scopes/scope1/nested/properties/", 0, 0);
-    dconf_client_write_fast(m_client, "/mlite-tests/ut_mdconfgroup/scopes/scope2/nested/properties/", 0, 0);
-    dconf_client_sync(m_client);
+    dconf_client_write_sync(m_client, "/mlite-tests/ut_mdconfgroup/scopes/", 0, 0, 0, 0);
 }
 
 void UtMDConfGroup::propertyData()
@@ -508,6 +520,27 @@ void UtMDConfGroup::scopes()
 
     nestedScope.setScope(&scope1);
     QCOMPARE(group2.stringProperty(), QStringLiteral("scope2: no parent"));
+}
+
+void UtMDConfGroup::pathChangeInResolve()
+{
+    {
+        TestConfGroup group;
+        group.setPath(QStringLiteral("/mlite-tests/ut_mdconfgroup/scopes/scope2"));
+        group.setStringProperty(QStringLiteral("nested/properties"));
+        group.setPath(QStringLiteral("/mlite-tests/ut_mdconfgroup/scopes/scope2/nested/properties"));
+        group.setStringProperty(QStringLiteral("nested-value"));
+    }
+
+    TestConfGroup group;
+
+    TestConfGroup nestedScope;
+    nestedScope.setScope(&group);
+    connect(&group, SIGNAL(stringPropertyChanged()), &nestedScope, SLOT(updatePath()));
+
+    group.setPath(QStringLiteral("/mlite-tests/ut_mdconfgroup/scopes/scope2"));
+
+    QCOMPARE(nestedScope.stringProperty(), QStringLiteral("nested-value"));
 }
 
 QTEST_MAIN(Tests::UtMDConfGroup)

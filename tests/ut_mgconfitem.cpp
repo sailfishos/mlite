@@ -21,6 +21,7 @@ private slots:
     void basicTest_data();
     void basicTest();
     void defaultValue();
+    void listDirs();
 
 private:
     static const QString KEY;
@@ -107,6 +108,26 @@ void UtMGConfItem::defaultValue()
 {
     MGConfItem(KEY).unset();
     QTRY_COMPARE(MGConfItem(KEY).value("default").toString(), QString("default"));
+}
+
+void UtMGConfItem::listDirs()
+{
+  MGConfItem key1("/mlite-tests/ut_mgconfitem/foo1/foo1");
+  key1.set("foo1");
+  MGConfItem key2("/mlite-tests/ut_mgconfitem/foo2/foo2");
+  key2.set("foo2");
+  // This is bad but we need to wait for all the dbus traffic to end
+  QTest::qWait(1000);
+
+  QStringList keys = MGConfItem("/mlite-tests/ut_mgconfitem").listDirs();
+
+  QVERIFY(keys.indexOf("/mlite-tests/ut_mgconfitem/foo1") != -1);
+  QVERIFY(keys.indexOf("/mlite-tests/ut_mgconfitem/foo2") != -1);
+
+  key1.unset();
+  key2.unset();
+  // This is bad but we need to wait for all the dbus traffic to end
+  QTest::qWait(1000);
 }
 
 QTEST_MAIN(Tests::UtMGConfItem)

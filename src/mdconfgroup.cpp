@@ -355,8 +355,11 @@ void MDConfGroupPrivate::resolveProperties(const QByteArray &scopePath)
     // Recurse into children with relative paths and resolve their properties as well.
     for (int i = 0; i < children.count(); ++i) {
         MDConfGroup * const child = children.at(i);
-        if (!child->priv->path.isEmpty() && !child->priv->path.startsWith(QLatin1Char('/')))
+        if (child->priv->absolutePath.isEmpty()
+                && !child->priv->path.isEmpty()
+                && !child->priv->path.startsWith(QLatin1Char('/'))) {
             children.at(i)->priv->resolveProperties(absolutePath);
+        }
     }
 }
 

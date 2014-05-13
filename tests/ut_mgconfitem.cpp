@@ -116,8 +116,8 @@ void UtMGConfItem::listDirs()
   key1.set("foo1");
   MGConfItem key2("/mlite-tests/ut_mgconfitem/foo2/foo2");
   key2.set("foo2");
-  // This is bad but we need to wait for all the dbus traffic to end
-  QTest::qWait(1000);
+
+  QTRY_VERIFY(MGConfItem("/mlite-tests/ut_mgconfitem").listDirs().size() == 2);
 
   QStringList keys = MGConfItem("/mlite-tests/ut_mgconfitem").listDirs();
 
@@ -126,8 +126,8 @@ void UtMGConfItem::listDirs()
 
   key1.unset();
   key2.unset();
-  // This is bad but we need to wait for all the dbus traffic to end
-  QTest::qWait(1000);
+
+  QTRY_VERIFY(MGConfItem("/mlite-tests/ut_mgconfitem").listDirs().size() == 0);
 }
 
 QTEST_MAIN(Tests::UtMGConfItem)

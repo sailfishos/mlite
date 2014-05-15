@@ -136,18 +136,34 @@ QStringList MGConfItem::listDirs() const
     QStringList children;
     gint length = 0;
     QByteArray k = convertKey(priv->key);
+    if (!k.endsWith("/")) {
+      k.append("/");
+    }
+
     gchar **dirs = dconf_client_list(priv->client, k.data(), &length);
     GError *error = NULL;
 
     for (gint x = 0; x < length; x++) {
-      if (dconf_is_dir(dirs[x], &error)) {
-	children.append(convertKey(dirs[x]));
+      const gchar *dir = g_strdup_printf ("%s%s", k.data(), dirs[x]);
+      if (dconf_is_dir(dir, &error)) {
+	// We have to mimic how gconf was behaving.
+	// so we need to chop off trailing slashes.
+	// dconf will also barf if it gets a "path" with 2 slashes.
+	QString d = convertKey(dir);
+	if (d.endsWith("/")) {
+	  d.chop(1);
+	}
+
+	children.append(d);
       }
+
+      g_free ((gpointer)dir);
 
       // If we have error set then dconf_is_dir() has returned false so we should be safe here
       if (error) {
 	qWarning() << "MGConfItem" << error->message;
 	g_error_free(error);
+	error = NULL;
       }
     }
 

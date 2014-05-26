@@ -13,6 +13,7 @@ Description: |
 PkgConfigBR:
     - Qt5DBus
     - Qt5Core
+    - Qt5Gui
     - Qt5Test
     - dconf
 Configure: none

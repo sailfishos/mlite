@@ -42,6 +42,7 @@ Development files needed for using the mlite library
 Summary:    Test suite for mlite-qt5
 Group:      System/Libraries
 Requires:   %{name} = %{version}-%{release}
+Requires:   dbus-x11
 
 %description tests
 Test suite for mlite-qt5.

@@ -35,6 +35,8 @@ SubPackages:
 - Name: tests
   Summary: Test suite for mlite-qt5
   Group: System/Libraries
+  Requires:
+        - dbus-x11
   Files:
         - "/opt/tests/mlite-qt5/*"
   Description: |

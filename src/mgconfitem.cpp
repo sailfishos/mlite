@@ -74,7 +74,6 @@ void MGConfItem::update_value(bool emit_signal)
     QByteArray k = convertKey(priv->key);
     GVariant *v = dconf_client_read(priv->client, k.data());
     if (!v) {
-        qWarning() << "MGConfItem Failed to read" << priv->key;
 	new_value = priv->value;
     }
 

@@ -2,6 +2,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QTemporaryFile>
 #include <QtCore/QTextStream>
+#include <QtCore/QTranslator>
 
 #include "mdesktopentry.h"
 
@@ -370,7 +371,8 @@ void UtMDesktopEntry::localization_data()
             "Name[sr@Latn]=l_vFoo\n",
             "sr_YU@Latn", "l_vFoo");
 
-    Helper::add("logical_noTranslation", "X-MeeGo-Logical-Id=LogicalFoo", QString(), "LogicalFoo");
+    Helper::add("logical", "X-MeeGo-Logical-Id=LogicalFoo", QString(), "LogicalFooTranslated");
+    Helper::add("logical_noTranslation", "X-MeeGo-Logical-Id=LogicalFooNoTr", QString(), "Foo");
 }
 
 void UtMDesktopEntry::localization()
@@ -378,6 +380,13 @@ void UtMDesktopEntry::localization()
     QFETCH(Values, values);
     QFETCH(QString, lang);
     QFETCH(QString, expected);
+
+    QTranslator *const translator = new QTranslator;
+    const bool loadOk = translator->load("ut_mdesktopentry",
+            QCoreApplication::instance()->applicationDirPath());
+    Q_ASSERT(loadOk);
+    qApp->installTranslator(translator);
+    Q_ASSERT(qtTrId("LogicalFoo") == "LogicalFooTranslated");
 
     if (!lang.isEmpty()) {
         qputenv("LANG", lang.toLocal8Bit());

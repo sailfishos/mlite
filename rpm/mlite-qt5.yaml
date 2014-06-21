@@ -16,6 +16,8 @@ PkgConfigBR:
     - Qt5Gui
     - Qt5Test
     - dconf
+PkgBR:
+    - qt5-qttools-linguist
 Configure: none
 Builder: qmake5
 QMakeOptions:

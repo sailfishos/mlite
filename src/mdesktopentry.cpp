@@ -48,7 +48,6 @@ const QString URLKey("Desktop Entry/URL");
 const QString LogicalIdKey("Desktop Entry/X-MeeGo-Logical-Id");
 const QString TranslationCatalogKey("Desktop Entry/X-MeeGo-Translation-Catalog");
 const QString XMaemoServiceKey("Desktop Entry/X-Maemo-Service");
-QMap<QString, QSharedPointer<QTranslator> > MDesktopEntryPrivate::translators;
 
 // The syntax of the locale string in the POSIX environment variables
 // related to locale is:
@@ -94,34 +93,7 @@ MDesktopEntryPrivate::MDesktopEntryPrivate(const QString &fileName) :
 
     //Checks if the file exists and opens it in readonly mode
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
-        if (readDesktopFile(file, desktopEntriesMap)) {
-            // Load the translation catalog if it has been defined for the entry.
-            if (desktopEntriesMap.contains(TranslationCatalogKey)) {
-                // Load the catalog from disk if it's not yet loaded
-                QString catalog = desktopEntriesMap.value(TranslationCatalogKey);
-                QString engineeringEnglishCatalog = catalog + "_eng_en";
-                if (!translators.contains(engineeringEnglishCatalog)) {
-                    QTranslator *translator = new QTranslator;
-                    if (translator->load(engineeringEnglishCatalog, "/usr/share/translations")) {
-                        translators[engineeringEnglishCatalog] = QSharedPointer<QTranslator>(translator);
-                        qApp->installTranslator(translator);
-                    } else {
-                        delete translator;
-                    }
-                }
-
-                if (!translators.contains(catalog)) {
-                    QTranslator *translator = new QTranslator;
-                    if (translator->load(QLocale(), catalog, "-", "/usr/share/translations")) {
-                        translators[catalog] = QSharedPointer<QTranslator>(translator);
-                        qApp->installTranslator(translator);
-                    } else {
-                        qDebug() << "Unable to load catalog" << catalog;
-                        delete translator;
-                    }
-                }
-            }
-        }
+        readDesktopFile(file, desktopEntriesMap);
     } else {
         qDebug() << "Specified Desktop file does not exist" << fileName;
     }
@@ -135,6 +107,18 @@ bool MDesktopEntryPrivate::readDesktopFile(QIODevice &device, QMap<QString, QStr
 {
     valid = MDesktopEntry::readDesktopFile(device, desktopEntriesMap);
     return valid;
+}
+
+QTranslator *MDesktopEntryPrivate::loadTranslator() const
+{
+    QTranslator *translator = new QTranslator;
+    QString catalog = desktopEntriesMap.value(TranslationCatalogKey);
+    if (catalog.isNull() || !translator->load(QLocale(), catalog, "-", "/usr/share/translations")) {
+        qDebug() << "Unable to load catalog" << catalog;
+        delete translator;
+        translator = 0;
+    }
+    return translator;
 }
 
 bool MDesktopEntry::readDesktopFile(QIODevice &device, QMap<QString, QString> &desktopEntriesMap)
@@ -335,11 +319,23 @@ QString MDesktopEntry::version() const
 
 QString MDesktopEntry::name() const
 {
+    Q_D(const MDesktopEntry);
+
+    if (!d->translatedName.isNull())
+        return d->translatedName;
+
     QString name = value(NameKey);
 
     if (contains(LogicalIdKey)) {
         QString key = value(LogicalIdKey);
-        QString translation = qtTrId(key.toLatin1().data());
+        QString translation;
+        QScopedPointer<QTranslator> translator(d->loadTranslator());
+        if (translator) {
+            translation = translator->translate(0, key.toLatin1().data(), 0, -1);
+        } else {
+            translation = qtTrId(key.toLatin1().data());
+        }
+
         if (!translation.isEmpty() && translation != key) {
             name = translation;
         }
@@ -360,6 +356,7 @@ QString MDesktopEntry::name() const
         }
     }
 
+    d->translatedName = name;
     return name;
 }
 

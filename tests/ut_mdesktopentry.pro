@@ -1,6 +1,6 @@
 include(testapplication.pri)
 
-TRANSLATIONS = ut_mdesktopentry.ts
+TRANSLATIONS = ut_mdesktopentry.ts ut_mdesktopentry2.ts
 
 lrelease.input = TRANSLATIONS
 lrelease.output = ${QMAKE_FILE_BASE}.qm

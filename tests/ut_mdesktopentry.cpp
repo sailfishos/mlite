@@ -371,8 +371,21 @@ void UtMDesktopEntry::localization_data()
             "Name[sr@Latn]=l_vFoo\n",
             "sr_YU@Latn", "l_vFoo");
 
-    Helper::add("logical", "X-MeeGo-Logical-Id=LogicalFoo", QString(), "LogicalFooTranslated");
+    QString entry = QString("X-MeeGo-Logical-Id=LogicalBar\n"
+                            "X-MeeGo-Translation-Catalog=%1/ut_mdesktopentry2.qm")
+            .arg(QCoreApplication::applicationDirPath());
+
+    Helper::add("logical_fromCatalog", entry, QString(), "LogicalBarTranslated");
+    Helper::add("logical_global", "X-MeeGo-Logical-Id=LogicalFoo", QString(), "LogicalFooTranslated");
     Helper::add("logical_noTranslation", "X-MeeGo-Logical-Id=LogicalFooNoTr", QString(), "Foo");
+    Helper::add("logical_other", "X-MeeGo-Logical-Id=LogicalBar", QString(), "Foo");
+
+    QTranslator *const translator = new QTranslator;
+    const bool loadOk = translator->load("ut_mdesktopentry",
+            QCoreApplication::instance()->applicationDirPath());
+    Q_ASSERT(loadOk);
+    qApp->installTranslator(translator);
+    Q_ASSERT(qtTrId("LogicalFoo") == "LogicalFooTranslated");
 }
 
 void UtMDesktopEntry::localization()
@@ -381,13 +394,6 @@ void UtMDesktopEntry::localization()
     QFETCH(QString, lang);
     QFETCH(QString, expected);
 
-    QTranslator *const translator = new QTranslator;
-    const bool loadOk = translator->load("ut_mdesktopentry",
-            QCoreApplication::instance()->applicationDirPath());
-    Q_ASSERT(loadOk);
-    qApp->installTranslator(translator);
-    Q_ASSERT(qtTrId("LogicalFoo") == "LogicalFooTranslated");
-
     if (!lang.isEmpty()) {
         qputenv("LANG", lang.toLocal8Bit());
     }
@@ -395,6 +401,7 @@ void UtMDesktopEntry::localization()
     MDesktopEntry entry(createDesktopEntry(values));
     QCOMPARE(entry.nameUnlocalized(), QString("Foo"));
     QCOMPARE(entry.name(), expected);
+    QVERIFY2(qtTrId("LogicalBar") != "LogicalBarTranslated", "MDesktopEntry: A translator was installed globally");
 }
 
 QString UtMDesktopEntry::createDesktopEntry(const Values &values)

@@ -57,9 +57,6 @@ public:
     //! A map for storing the desktop entries keys and their corresponding values
     QMap<QString, QString> desktopEntriesMap;
 
-    //! A map for storing translators for translation catalogs
-    static QMap<QString, QSharedPointer<QTranslator> > translators;
-
     /*!
      * Returns the boolean value of a key.
      *
@@ -79,6 +76,15 @@ public:
 
     //! Flag to indicate whether the desktop entry is valid during parsing
     bool valid;
+
+    //! Cached translated name
+    mutable QString translatedName;
+
+    /*!
+     * Loads a QTranslator from X-MeeGo-Translation-Catalog
+     * \return A translator for specified catalog, or null
+     */
+    QTranslator *loadTranslator() const;
 
 protected:
     /*

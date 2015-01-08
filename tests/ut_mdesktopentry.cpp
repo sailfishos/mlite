@@ -33,6 +33,8 @@ private slots:
     void values();
     void localization_data();
     void localization();
+    void readForeignSection();
+    void readDesktopFileToMap();
 
 private:
     QString createDesktopEntry(const Values &values);
@@ -142,8 +144,8 @@ void UtMDesktopEntry::isValid_data()
     };
     foreach (const QString &key, multivalueKeys) {
         MultivalueHelper::add("endSemicolon", key, "foo;", true);
-        MultivalueHelper::add("noEndSemicolon", key, "foo", false);
-        MultivalueHelper::add("escapedEndSemicolon", key, "foo\\;", false);
+        MultivalueHelper::add("noEndSemicolon", key, "foo", true);
+        MultivalueHelper::add("escapedEndSemicolon", key, "foo\\;", true);
         MultivalueHelper::add("endSemicolonWhitespace", key, "foo; ", true);
     }
 
@@ -169,10 +171,9 @@ void UtMDesktopEntry::isValid_data()
     HeadTailHelper::add("badFirstGroup", "[My Group]\nfoo=bar\n[Desktop Entry]", QString(), false);
     HeadTailHelper::add("startsWithSpaces", "  \t\n  \t \n\n[Desktop Entry]", QString(), true);
     HeadTailHelper::add("startsWithComment", "# lorem ipsum\n\n[Desktop Entry]", QString(), true);
-    HeadTailHelper::add("startsWithNoGroup", "foo=bar\n\n[Desktop Entry]", QString(), true);
-    HeadTailHelper::add("duplicateDesktopEntryGroup", "[Desktop Entry]\nfoo=bar\n\n[Desktop Entry]",
-            QString(), false);
-    HeadTailHelper::add("duplicateAnyGroup", QString(), "[Foo]\nfoo=bar\n\n[Foo]\nbar=baz", false);
+    HeadTailHelper::add("startsWithNoGroup", "foo=bar\n\n[Desktop Entry]", QString(), false);
+    HeadTailHelper::add("duplicateDesktopEntryGroup", "[Desktop Entry]\nfoo=bar\n\n[Desktop Entry]", QString(), true);
+    HeadTailHelper::add("duplicateAnyGroup", QString(), "[Foo]\nfoo=bar\n\n[Foo]\nbar=baz", true);
 }
 
 void UtMDesktopEntry::isValid()
@@ -220,7 +221,7 @@ void UtMDesktopEntry::duplicateKey()
     values["__tail__"] = "foo=baz";
 
     MDesktopEntry entry(createDesktopEntry(values));
-    QCOMPARE(entry.value("Desktop Entry/foo"), QString("bar"));
+    QCOMPARE(entry.value("Desktop Entry/foo"), QString("baz"));
 }
 
 void UtMDesktopEntry::values_data()
@@ -365,7 +366,7 @@ void UtMDesktopEntry::localization_data()
             "Name[sr]=l__Foo\n"
             "Name[sr@Latn]=l_vFoo\n"
             "Name[sr_YU]=lc_Foo\n",
-            "sr_YU@Latn", "lc_Foo");
+            "sr_YU@Latn", "l_vFoo");
     Helper::add("order_l_v",
             "Name[sr]=l__Foo\n"
             "Name[sr@Latn]=l_vFoo\n",
@@ -383,9 +384,9 @@ void UtMDesktopEntry::localization_data()
     QTranslator *const translator = new QTranslator;
     const bool loadOk = translator->load("ut_mdesktopentry",
             QCoreApplication::instance()->applicationDirPath());
-    Q_ASSERT(loadOk);
+    QVERIFY(loadOk);
     qApp->installTranslator(translator);
-    Q_ASSERT(qtTrId("LogicalFoo") == "LogicalFooTranslated");
+    QVERIFY(qtTrId("LogicalFoo") == "LogicalFooTranslated");
 }
 
 void UtMDesktopEntry::localization()
@@ -395,6 +396,12 @@ void UtMDesktopEntry::localization()
     QFETCH(QString, expected);
 
     if (!lang.isEmpty()) {
+        // Make sure LC_ALL and LC_MESSAGES are not set, as those would override
+        // our LANG variable below if they are set.
+        // (see http://pubs.opengroup.org/onlinepubs/7908799/xbd/envvar.html)
+        unsetenv("LC_ALL");
+        unsetenv("LC_MESSAGES");
+
         qputenv("LANG", lang.toLocal8Bit());
     }
 
@@ -402,6 +409,46 @@ void UtMDesktopEntry::localization()
     QCOMPARE(entry.nameUnlocalized(), QString("Foo"));
     QCOMPARE(entry.name(), expected);
     QVERIFY2(qtTrId("LogicalBar") != "LogicalBarTranslated", "MDesktopEntry: A translator was installed globally");
+}
+
+void UtMDesktopEntry::readForeignSection()
+{
+    Values values;
+    values["__tail__"] = "[Bar]\na=b\nb=a;b;c";
+
+    MDesktopEntry entry(createDesktopEntry(values));
+
+    QVERIFY(entry.contains("Bar/a"));
+    QVERIFY(entry.contains("Bar", "a"));
+
+    QCOMPARE(entry.value("Bar/a"), QString("b"));
+    QCOMPARE(entry.value("Bar", "a"), QString("b"));
+
+    QCOMPARE(entry.stringListValue("Bar/b"), QStringList() << "a" << "b" << "c");
+    QCOMPARE(entry.stringListValue("Bar", "b"), QStringList() << "a" << "b" << "c");
+}
+
+void UtMDesktopEntry::readDesktopFileToMap()
+{
+    Values values;
+    values["Type"] = "Application";
+    values["Categories"] = "a;b;c";
+    values["__tail__"] = "[Bar]\na=b\nb=a;b;c";
+
+    QMap<QString, QString> desktopEntriesMap;
+    QFile file(createDesktopEntry(values));
+    file.open(QFile::ReadOnly);
+
+    MDesktopEntry::readDesktopFile(file, desktopEntriesMap);
+
+    QVERIFY(desktopEntriesMap.contains("Bar/a"));
+    QCOMPARE(desktopEntriesMap["Bar/a"], QString("b"));
+
+    QVERIFY(desktopEntriesMap.contains("Desktop Entry/Type"));
+    QCOMPARE(desktopEntriesMap["Desktop Entry/Type"], QString("Application"));
+
+    QVERIFY(desktopEntriesMap.contains("Desktop Entry/Categories"));
+    QCOMPARE(desktopEntriesMap["Desktop Entry/Categories"], QString("a;b;c"));
 }
 
 QString UtMDesktopEntry::createDesktopEntry(const Values &values)

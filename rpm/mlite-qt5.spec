@@ -13,6 +13,7 @@ BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Gui)
 BuildRequires:  pkgconfig(Qt5Test)
 BuildRequires:  pkgconfig(dconf)
+BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  qt5-qttools-linguist
 
 %description

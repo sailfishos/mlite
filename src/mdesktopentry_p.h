@@ -17,10 +17,31 @@
 #ifndef MDESKTOPENTRY_P_H
 #define MDESKTOPENTRY_P_H
 
-#include <QSharedPointer>
+#include <glib.h>
 
 class MDesktopEntry;
 class QTranslator;
+
+class GKeyFileWrapper {
+public:
+    GKeyFileWrapper();
+    ~GKeyFileWrapper();
+
+    bool load(QIODevice &device);
+
+    QString startGroup() const;
+    QStringList sections() const;
+    QStringList keys(const QString &section) const;
+    QString stringValue(const QString &section, const QString &key) const;
+    QString localizedValue(const QString &section, const QString &key) const;
+    bool booleanValue(const QString &section, const QString &key) const;
+    QStringList stringList(const QString &section, const QString &key) const;
+    bool contains(const QString &section, const QString &key) const;
+
+private:
+    GKeyFile *m_key_file;
+};
+
 
 /*!
  * MDesktopEntryPrivate is the private class for MDesktopEntry.
@@ -42,37 +63,30 @@ public:
      */
     virtual ~MDesktopEntryPrivate();
 
-    /*!
-     * Parses a desktop entry file.
-     *
-     * \param device the QIODevice to read the desktop file from
-     * \param map the QMap to store key-value pairs to
-     * \return true if desktop file can be parsed
-     */
-    bool readDesktopFile(QIODevice &device, QMap<QString, QString> &map);
-
     //! The name of the file where the information for this desktop entry was read from.
     QString sourceFileName;
 
-    //! A map for storing the desktop entries keys and their corresponding values
-    QMap<QString, QString> desktopEntriesMap;
+    //! Wrapper around GKeyFile that stores the parsed desktop entry.
+    GKeyFileWrapper keyFile;
 
     /*!
      * Returns the boolean value of a key.
      *
+     * \param section the section of the string list value (e.g. "Desktop Entry")
      * \param key the key to return the boolean value for
      * \return true if the value of specified key is set to "true" and false otherwise.
      */
-    bool boolValue(const QString &key) const;
+    bool boolValue(const QString &section, const QString &key) const;
 
     /*!
      * Returns the string list value of a key. The list will be populated
      * with semicolon separated parts of the key value.
      *
+     * \param section the section of the string list value (e.g. "Desktop Entry")
      * \param key the key to return the string list value for
      * \return a string list containing the semicolon separated parts of the key value
      */
-    QStringList stringListValue(const QString &key) const;
+    QStringList stringListValue(const QString &section, const QString &key) const;
 
     //! Flag to indicate whether the desktop entry is valid during parsing
     bool valid;

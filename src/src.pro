@@ -40,10 +40,6 @@ packagesExist(dconf) {
     warning("dconf not found; MGConfItem will not be built")
 }
 
-equals(QT_MAJOR_VERSION, 4) {
-    include(../json/json.pri)
-}
-
 system(qdbusxml2cpp notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
 
 SOURCES += mnotificationmanagerproxy.cpp \

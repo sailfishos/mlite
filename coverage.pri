@@ -4,7 +4,6 @@ COVERAGE_EXCLUDES = \
     */*.moc \
     */qrc_*.cpp \
     /build/* \
-    /json/* \
     /tests/* \
     mnotificationmanagerproxy.h \
     mnotificationmanagerproxy.cpp \

@@ -44,19 +44,6 @@ public:
     }
 
 public:
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    static void msgHandler(QtMsgType type, const char *message)
-    {
-        qInstallMsgHandler(0);
-        qt_message_output(type, QByteArray("MOCK   : ").append(message));
-        qInstallMsgHandler(msgHandler);
-    }
-
-    static void installMsgHandler()
-    {
-      qInstallMsgHandler(msgHandler);
-    }
-#else
     static void messageHandler(QtMsgType type, const QMessageLogContext &context,
         const QString &message)
     {
@@ -69,7 +56,6 @@ public:
     {
       qInstallMessageHandler(messageHandler);
     }
-#endif
 };
 
 inline DBusClientTestBase::DBusClientTestBase()

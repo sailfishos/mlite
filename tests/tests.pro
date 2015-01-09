@@ -4,11 +4,13 @@ TEMPLATE = subdirs
 SUBDIRS = \
         ut_mdesktopentry.pro \
         ut_mfiledatastore.pro \
-        ut_mgconfitem.pro \
         ut_mnotification.pro \
         ut_mremoteaction.pro \
 
-packagesExist(dconf): SUBDIRS += ut_mdconfgroup.pro
+packagesExist(dconf) {
+    SUBDIRS += ut_mdconfgroup.pro
+    SUBDIRS += ut_mgconfitem.pro
+}
 
 configure($${PWD}/tests.xml.in)
 tests_xml.path = $${INSTALL_TESTDIR}

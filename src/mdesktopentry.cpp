@@ -26,74 +26,206 @@
 #include "mdesktopentry.h"
 #include "mdesktopentry_p.h"
 
-const QString TypeKey("Desktop Entry/Type");
-const QString VersionKey("Desktop Entry/Version");
-const QString NameKey("Desktop Entry/Name");
-const QString GenericNameKey("Desktop Entry/GenericName");
-const QString NoDisplayKey("Desktop Entry/NoDisplay");
-const QString CommentKey("Desktop Entry/Comment");
-const QString IconKey("Desktop Entry/Icon");
-const QString HiddenKey("Desktop Entry/Hidden");
-const QString OnlyShowInKey("Desktop Entry/OnlyShowIn");
-const QString NotShowInKey("Desktop Entry/NotShowIn");
-const QString TryExecKey("Desktop Entry/TryExec");
-const QString ExecKey("Desktop Entry/Exec");
-const QString PathKey("Desktop Entry/Path");
-const QString TerminalKey("Desktop Entry/Terminal");
-const QString MimeTypeKey("Desktop Entry/MimeType");
-const QString CategoriesKey("Desktop Entry/Categories");
-const QString StartupNotifyKey("Desktop Entry/StartupNotify");
-const QString StartupWMClassKey("Desktop Entry/StartupWMClass");
-const QString URLKey("Desktop Entry/URL");
-const QString LogicalIdKey("Desktop Entry/X-MeeGo-Logical-Id");
-const QString TranslationCatalogKey("Desktop Entry/X-MeeGo-Translation-Catalog");
-const QString XMaemoServiceKey("Desktop Entry/X-Maemo-Service");
+const QString DesktopEntrySection("Desktop Entry");
+const QString TypeKey("Type");
+const QString VersionKey("Version");
+const QString NameKey("Name");
+const QString GenericNameKey("GenericName");
+const QString NoDisplayKey("NoDisplay");
+const QString CommentKey("Comment");
+const QString IconKey("Icon");
+const QString HiddenKey("Hidden");
+const QString OnlyShowInKey("OnlyShowIn");
+const QString NotShowInKey("NotShowIn");
+const QString TryExecKey("TryExec");
+const QString ExecKey("Exec");
+const QString PathKey("Path");
+const QString TerminalKey("Terminal");
+const QString MimeTypeKey("MimeType");
+const QString CategoriesKey("Categories");
+const QString StartupNotifyKey("StartupNotify");
+const QString StartupWMClassKey("StartupWMClass");
+const QString URLKey("URL");
+const QString LogicalIdKey("X-MeeGo-Logical-Id");
+const QString TranslationCatalogKey("X-MeeGo-Translation-Catalog");
+const QString XMaemoServiceKey("X-Maemo-Service");
 
-// The syntax of the locale string in the POSIX environment variables
-// related to locale is:
-//
-//    [language[_territory][.codeset][@modifier]]
-//
-// (see: http://www.opengroup.org/onlinepubs/000095399/basedefs/xbd_chap08.html)
-//
-// language is usually lower case in Linux but according to the above specification
-// it may start with uppercase as well (i.e. LANG=Fr_FR is allowed).
-//
-void parsePosixLang(const QString &localeString, QString *language, QString *country, QString *script)
+
+GKeyFileWrapper::GKeyFileWrapper()
+    : m_key_file(g_key_file_new())
 {
-    // we do not need the encoding and therefore use non-capturing
-    // parentheses for the encoding part here.
-    // The country part is usually a 2 letter uppercase code
-    // as in the above example, but there is the exception
-    // es_419, i.e. Spanish in Latin America where the “country code”
-    // is “419”. es_419 isn’t really a valid value for LANG, but for consistency
-    // let’s make this behave the same way as the icu locale names work for es_419,
-    // we only use LANG as a fallback to specify a locale when gconf isn’t available
-    // or doesn’t work.
-    QRegExp regexp("([a-z]{2,3})(_([A-Z]{2,2}|419))?(?:.(?:[a-zA-Z0-9-]+))?(@([A-Z][a-z]+))?");
-
-    if (regexp.indexIn(localeString) == 0 &&
-            regexp.capturedTexts().size() == 6) { // size of regexp pattern above
-        *language = regexp.capturedTexts().at(1);
-        *script = regexp.capturedTexts().at(5);
-        *country = regexp.capturedTexts().at(3);
-    } else {
-        *language = QString();
-        *script = QString();
-        *country = QString();
-    }
 }
 
-MDesktopEntryPrivate::MDesktopEntryPrivate(const QString &fileName) :
-    sourceFileName(fileName),
-    valid(true),
-    q_ptr(NULL)
+GKeyFileWrapper::~GKeyFileWrapper()
+{
+    g_key_file_free(m_key_file);
+}
+
+bool GKeyFileWrapper::load(QIODevice &device)
+{
+    QByteArray contents = device.readAll();
+
+    GError *err = NULL;
+    if (!g_key_file_load_from_data(m_key_file, contents.constData(), contents.size(), G_KEY_FILE_NONE, &err)) {
+        qWarning() << "Could not load .desktop file:" << QString::fromUtf8(err->message);
+        g_clear_error(&err);
+        return false;
+    }
+
+    return true;
+}
+
+QString GKeyFileWrapper::startGroup() const
+{
+    QString result;
+
+    gchar *section = g_key_file_get_start_group(m_key_file);
+    result = QString::fromUtf8(section);
+    g_free(section);
+
+    return result;
+}
+
+QStringList GKeyFileWrapper::sections() const
+{
+    QStringList result;
+
+    gchar **sections = g_key_file_get_groups(m_key_file, NULL);
+    gchar **section = sections;
+    while (*section) {
+        result << QString::fromUtf8(*section++);
+    }
+    g_strfreev(sections);
+
+    return result;
+}
+
+QStringList GKeyFileWrapper::keys(const QString &section) const
+{
+    QStringList result;
+    QByteArray section_utf8 = section.toUtf8();
+
+    GError *err = NULL;
+
+    gchar **keys = g_key_file_get_keys(m_key_file, section_utf8.constData(), NULL, &err);
+    if (keys == NULL) {
+        qWarning() << "Could not get keys:" << QString::fromUtf8(err->message);
+        g_clear_error(&err);
+        return result;
+    }
+
+    gchar **key = keys;
+    while (*key) {
+        result << QString::fromUtf8(*key++);
+    }
+    g_strfreev(keys);
+
+    return result;
+}
+
+QString GKeyFileWrapper::localizedValue(const QString &section, const QString &key) const
+{
+    QString result;
+
+    QByteArray section_utf8 = section.toUtf8();
+    QByteArray key_utf8 = key.toUtf8();
+
+    GError *err = NULL;
+    gchar *value = g_key_file_get_locale_string(m_key_file, section_utf8.constData(), key_utf8.constData(), NULL, &err);
+    if (!value) {
+        qWarning() << "Could not read value:" << QString::fromUtf8(err->message);
+        g_clear_error(&err);
+        return result;
+    }
+
+    result = QString::fromUtf8(value);
+    g_free(value);
+
+    return result;
+}
+
+QString GKeyFileWrapper::stringValue(const QString &section, const QString &key) const
+{
+    QString result;
+
+    QByteArray section_utf8 = section.toUtf8();
+    QByteArray key_utf8 = key.toUtf8();
+
+    GError *err = NULL;
+    gchar *value = g_key_file_get_string(m_key_file, section_utf8.constData(), key_utf8.constData(), &err);
+    if (!value) {
+        qWarning() << "Could not read value:" << QString::fromUtf8(err->message);
+        g_clear_error(&err);
+        return result;
+    }
+
+    result = QString::fromUtf8(value);
+    g_free(value);
+
+    return result;
+}
+
+bool GKeyFileWrapper::booleanValue(const QString &section, const QString &key) const
+{
+    gboolean result = FALSE;
+
+    QByteArray section_utf8 = section.toUtf8();
+    QByteArray key_utf8 = key.toUtf8();
+
+    GError *err = NULL;
+    result = g_key_file_get_boolean(m_key_file, section_utf8.constData(), key_utf8.constData(), &err);
+    if (err != NULL) {
+        qWarning() << "Could not read boolean value for "
+                   << section << "/" << key << ":" << QString::fromUtf8(err->message);
+        g_clear_error(&err);
+    }
+
+    return result;
+}
+
+QStringList GKeyFileWrapper::stringList(const QString &section, const QString &key) const
+{
+    QStringList result;
+
+    QByteArray section_utf8 = section.toUtf8();
+    QByteArray key_utf8 = key.toUtf8();
+
+    gchar **values = g_key_file_get_string_list(m_key_file, section_utf8.constData(), key_utf8.constData(), NULL, NULL);
+    gchar **value = values;
+    while (value && *value) {
+        result << QString::fromUtf8(*value);
+        value++;
+    }
+    g_strfreev(values);
+
+    return result;
+}
+
+bool GKeyFileWrapper::contains(const QString &section, const QString &key) const
+{
+    QByteArray section_utf8 = section.toUtf8();
+    QByteArray key_utf8 = key.toUtf8();
+    return g_key_file_has_key(m_key_file, section_utf8, key_utf8, NULL);
+}
+
+
+
+MDesktopEntryPrivate::MDesktopEntryPrivate(const QString &fileName)
+    : sourceFileName(fileName)
+    , keyFile()
+    , valid(true)
+    , q_ptr(NULL)
 {
     QFile file(fileName);
 
     //Checks if the file exists and opens it in readonly mode
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
-        readDesktopFile(file, desktopEntriesMap);
+        valid = keyFile.load(file);
+
+        // File is invalid if it doesn't start with DesktopEntrySection
+        if (keyFile.startGroup() != DesktopEntrySection) {
+            valid = false;
+        }
     } else {
         qDebug() << "Specified Desktop file does not exist" << fileName;
     }
@@ -103,16 +235,10 @@ MDesktopEntryPrivate::~MDesktopEntryPrivate()
 {
 }
 
-bool MDesktopEntryPrivate::readDesktopFile(QIODevice &device, QMap<QString, QString> &desktopEntriesMap)
-{
-    valid = MDesktopEntry::readDesktopFile(device, desktopEntriesMap);
-    return valid;
-}
-
 QTranslator *MDesktopEntryPrivate::loadTranslator() const
 {
     QTranslator *translator = new QTranslator;
-    QString catalog = desktopEntriesMap.value(TranslationCatalogKey);
+    QString catalog = keyFile.stringValue(DesktopEntrySection, TranslationCatalogKey);
     if (catalog.isNull() || !translator->load(QLocale(), catalog, "-", "/usr/share/translations")) {
         qDebug() << "Unable to load catalog" << catalog;
         delete translator;
@@ -121,104 +247,45 @@ QTranslator *MDesktopEntryPrivate::loadTranslator() const
     return translator;
 }
 
+/**
+ * Unfortunately this is public API, so we need to provide the ::readDesktopFile() implementation
+ * even though we don't use a QMap<QString, QString> internally anymore to represent the file.
+ **/
 bool MDesktopEntry::readDesktopFile(QIODevice &device, QMap<QString, QString> &desktopEntriesMap)
 {
-    bool valid = true;
-    // Group header is of form [groupname]
-    // The group name is captured
-    // Group names may contain all ASCII characters except for [ and ] and control characters
-    QRegExp groupHeaderRE("\\[([\\0040-\\0132\\0134\\0136-\\0176]+)\\]");
-    // Key-value pair is of form Key=Value or Key[localization]=Value
-    // The first capture is the key and the second capture is the value
-    QRegExp keyValueRE("([A-Za-z0-9-]+"                // key
-                       "(?:\\[[A-Za-z0-9_@.-]+\\])?"   // optional localization
-                       ")"                             // end key capturing
-                       "\\s*=\\s*"                     // equals
-                       "(.*)");                        // value
-    QString currentGroup;
-    QStringList groupNames;
-    QTextStream stream(&device);
-    stream.setCodec(QTextCodec::codecForName("UTF-8"));
-    while (!stream.atEnd()) {
-        QString line = stream.readLine().trimmed();
-        if (!line.isEmpty() && !line.startsWith('#')) {
-            if (keyValueRE.exactMatch(line) && !currentGroup.isEmpty()) {
-                // A key-value line was found. Prepend the key with the current group name.
-                QString desktopKey = currentGroup + '/' + keyValueRE.cap(1);
+    GKeyFileWrapper f;
 
-                // Check whether it's already in the map
-                if (!desktopEntriesMap.contains(desktopKey)) {
-                    QString value = keyValueRE.cap(2);
-
-                    // Check whether this is a known multivalue key
-                    if (desktopKey == CategoriesKey || desktopKey == OnlyShowInKey ||
-                            desktopKey == NotShowInKey || desktopKey == MimeTypeKey) {
-                        if (value.endsWith("\\;") || !value.endsWith(';')) {
-                            // Multivalue doesn't end with a semicolon so mark the desktop entry invalid
-                            qDebug() << "Value for multivalue key" << desktopKey << "does not end in a semicolon";
-                            valid = false;
-                        }
-                    }
-
-                    // Add the value to the desktop entries map
-                    desktopEntriesMap.insert(desktopKey, value);
-                } else {
-                    // Key is already present in the map so issue a warning
-                    qDebug() << "Key" << desktopKey << "already defined. Value" << keyValueRE.cap(2) << "is ignored";
-                }
-            } else if (groupHeaderRE.exactMatch(line)) {
-                // A group header line was found and if it's not already defined, set it as current group
-                if (!groupNames.contains(groupHeaderRE.cap(1), Qt::CaseSensitive)) {
-                    if (groupNames.isEmpty() && groupHeaderRE.cap(1) != "Desktop Entry") {
-                        qDebug() << "Desktop entry should start with group name \"Desktop Entry\" ";
-                        valid = false;
-                    } else {
-                        groupNames.push_back(groupHeaderRE.cap(1));
-                        currentGroup = groupHeaderRE.cap(1);
-                    }
-                }
-                // Redefining a group name will cause the desktop entry to become invalid but still parsed by the parser.
-                else {
-                    currentGroup = groupHeaderRE.cap(1);
-                    qDebug() << "Multiple definitions of group" << groupHeaderRE.cap(1);
-                    valid = false;
-                }
-            } else {
-                qDebug() << "Invalid .desktop entry line:" << line;
-            }
-        }
+    if (!f.load(device)) {
+        return false;
     }
-    return valid;
-}
 
-bool MDesktopEntryPrivate::boolValue(const QString &key) const
-{
-    return desktopEntriesMap.value(key) == "true";
-}
+    /**
+     * From the spec: The basic format of the desktop entry file requires that
+     * there be a group header named "Desktop Entry". [...] There should be
+     * nothing preceding this group in the desktop entry file but possibly one
+     * or more comments.
+     **/
+    if (f.startGroup() != DesktopEntrySection) {
+        return false;
+    }
 
-QStringList MDesktopEntryPrivate::stringListValue(const QString &key) const
-{
-    QStringList list;
-    QString value = desktopEntriesMap.value(key);
-
-    // Split the string using ; but not \; as the separator
-    const int valueLength = value.length();
-    for (int current = 0; current < valueLength;) {
-        bool previousIsBackslash = false;
-        const int start = current;
-        for (int end = current; end < valueLength; ++current, ++end) {
-            if (value.at(end) == ';' && !previousIsBackslash) {
-                // Replace \; with ;
-                list.append(value.mid(start, end - start).replace("\\;", ";"));
-                current++;
-                break;
-            }
-
-            previousIsBackslash = value.at(end) == '\\';
+    foreach (const QString &section, f.sections()) {
+        foreach (const QString &key, f.keys(section)) {
+            desktopEntriesMap[section + "/" + key] = f.stringValue(section, key);
         }
     }
 
-    return list;
+    return true;
+}
+
+bool MDesktopEntryPrivate::boolValue(const QString &section, const QString &key) const
+{
+    return keyFile.booleanValue(section, key);
+}
+
+QStringList MDesktopEntryPrivate::stringListValue(const QString &section, const QString &key) const
+{
+    return keyFile.stringList(section, key);
 }
 
 MDesktopEntry::MDesktopEntry(const QString &fileName) :
@@ -243,52 +310,55 @@ QString MDesktopEntry::fileName() const
 
 bool MDesktopEntry::contains(const QString &key) const
 {
-    return d_ptr->desktopEntriesMap.contains(key);
+    QStringList v = key.split('/');
+    return (v.length() == 2) ? contains(v[0], v[1]) : false;
 }
 
 bool MDesktopEntry::contains(const QString &group, const QString &key) const
 {
-    return d_ptr->desktopEntriesMap.contains(group + '/' + key);
+    return d_ptr->keyFile.contains(group, key);
 }
 
 QString MDesktopEntry::value(const QString &key) const
 {
-    return d_ptr->desktopEntriesMap.value(key);
+    QStringList v = key.split('/');
+    return (v.length() == 2) ? value(v[0], v[1]) : QString();
 }
 
 QString MDesktopEntry::value(const QString &group, const QString &key) const
 {
-    return d_ptr->desktopEntriesMap.value(group + '/' + key);
+    return d_ptr->keyFile.stringValue(group, key);
 }
 
 QStringList MDesktopEntry::stringListValue(const QString &key) const
 {
-    return d_ptr->stringListValue(key);
+    QStringList v = key.split('/');
+    return (v.length() == 2) ? stringListValue(v[0], v[1]) : QStringList();
 }
 
 QStringList MDesktopEntry::stringListValue(const QString &group, const QString &key) const
 {
-    return d_ptr->stringListValue(group + '/' + key);
+    return d_ptr->keyFile.stringList(group, key);
 }
 
 bool MDesktopEntry::isValid() const
 {
     // The Type and Name keys always have to be present
-    if (!contains(TypeKey)) {
+    if (!contains(DesktopEntrySection, TypeKey)) {
         return false;
     }
 
-    if (!contains(NameKey)) {
+    if (!contains(DesktopEntrySection, NameKey)) {
         return false;
     }
 
     // In case of an application the Exec key needs to be present
-    if (type() == "Application" && !contains(ExecKey)) {
+    if (type() == "Application" && !contains(DesktopEntrySection, ExecKey)) {
         return false;
     }
 
     // In case of a link the URL key needs to be present
-    if (type() == "Link" && !contains(URLKey)) {
+    if (type() == "Link" && !contains(DesktopEntrySection, URLKey)) {
         return false;
     }
 
@@ -309,12 +379,12 @@ uint MDesktopEntry::hash() const
 
 QString MDesktopEntry::type() const
 {
-    return value(TypeKey);
+    return value(DesktopEntrySection, TypeKey);
 }
 
 QString MDesktopEntry::version() const
 {
-    return value(VersionKey);
+    return value(DesktopEntrySection, VersionKey);
 }
 
 QString MDesktopEntry::name() const
@@ -324,10 +394,10 @@ QString MDesktopEntry::name() const
     if (!d->translatedName.isNull())
         return d->translatedName;
 
-    QString name = value(NameKey);
+    QString name = d->keyFile.localizedValue(DesktopEntrySection, NameKey);
 
-    if (contains(LogicalIdKey)) {
-        QString key = value(LogicalIdKey);
+    if (contains(DesktopEntrySection, LogicalIdKey)) {
+        QString key = value(DesktopEntrySection, LogicalIdKey);
         QString translation;
         QScopedPointer<QTranslator> translator(d->loadTranslator());
         if (translator) {
@@ -339,21 +409,6 @@ QString MDesktopEntry::name() const
         if (!translation.isEmpty() && translation != key) {
             name = translation;
         }
-    } else {
-        QString lang, variant, country, postfixKey;
-
-        parsePosixLang(getenv("LANG"), &lang, &country, &variant);
-        if (contains(postfixKey = NameKey + '[' + lang + '_' +
-                                  country  + '@' +
-                                  variant  + ']') ||
-                contains(postfixKey = NameKey + '[' + lang + '_' +
-                                      country  + ']') ||
-                contains(postfixKey = NameKey + '[' + lang + '@' +
-                                      variant  + ']') ||
-                contains(postfixKey = NameKey + '[' + lang + ']')) {
-            // Use the freedesktop.org standard localization style
-            name = value(postfixKey);
-        }
     }
 
     d->translatedName = name;
@@ -362,90 +417,90 @@ QString MDesktopEntry::name() const
 
 QString MDesktopEntry::nameUnlocalized() const
 {
-    return value(NameKey);
+    return value(DesktopEntrySection, NameKey);
 }
 
 QString MDesktopEntry::genericName() const
 {
-    return value(GenericNameKey);
+    return value(DesktopEntrySection, GenericNameKey);
 }
 
 bool MDesktopEntry::noDisplay() const
 {
-    return d_ptr->boolValue(NoDisplayKey);
+    return d_ptr->boolValue(DesktopEntrySection, NoDisplayKey);
 }
 
 QString MDesktopEntry::comment() const
 {
-    return value(CommentKey);
+    return value(DesktopEntrySection, CommentKey);
 }
 
 QString MDesktopEntry::icon() const
 {
-    return value(IconKey);
+    return value(DesktopEntrySection, IconKey);
 }
 
 bool MDesktopEntry::hidden() const
 {
-    return d_ptr->boolValue(HiddenKey);
+    return d_ptr->boolValue(DesktopEntrySection, HiddenKey);
 }
 
 QStringList MDesktopEntry::onlyShowIn() const
 {
-    return d_ptr->stringListValue(OnlyShowInKey);
+    return d_ptr->stringListValue(DesktopEntrySection, OnlyShowInKey);
 }
 
 QStringList MDesktopEntry::notShowIn() const
 {
-    return d_ptr->stringListValue(NotShowInKey);
+    return d_ptr->stringListValue(DesktopEntrySection, NotShowInKey);
 }
 
 QString MDesktopEntry::tryExec() const
 {
-    return value(TryExecKey);
+    return value(DesktopEntrySection, TryExecKey);
 }
 
 QString MDesktopEntry::exec() const
 {
-    return value(ExecKey);
+    return value(DesktopEntrySection, ExecKey);
 }
 
 QString MDesktopEntry::xMaemoService() const
 {
-    return value(XMaemoServiceKey);
+    return value(DesktopEntrySection, XMaemoServiceKey);
 }
 
 QString MDesktopEntry::path() const
 {
-    return value(PathKey);
+    return value(DesktopEntrySection, PathKey);
 }
 
 bool MDesktopEntry::terminal() const
 {
-    return d_ptr->boolValue(TerminalKey);
+    return d_ptr->boolValue(DesktopEntrySection, TerminalKey);
 }
 
 QStringList MDesktopEntry::mimeType() const
 {
-    return d_ptr->stringListValue(MimeTypeKey);
+    return d_ptr->stringListValue(DesktopEntrySection, MimeTypeKey);
 }
 
 QStringList MDesktopEntry::categories() const
 {
-    return d_ptr->stringListValue(CategoriesKey);
+    return d_ptr->stringListValue(DesktopEntrySection, CategoriesKey);
 }
 
 bool MDesktopEntry::startupNotify() const
 {
-    return d_ptr->boolValue(StartupNotifyKey);
+    return d_ptr->boolValue(DesktopEntrySection, StartupNotifyKey);
 }
 
 QString MDesktopEntry::startupWMClass() const
 {
-    return value(StartupWMClassKey);
+    return value(DesktopEntrySection, StartupWMClassKey);
 }
 
 QString MDesktopEntry::url() const
 {
-    return value(URLKey);
+    return value(DesktopEntrySection, URLKey);
 }

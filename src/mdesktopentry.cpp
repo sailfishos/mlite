@@ -280,6 +280,10 @@ bool MDesktopEntry::readDesktopFile(QIODevice &device, QMap<QString, QString> &d
 
 bool MDesktopEntryPrivate::boolValue(const QString &section, const QString &key) const
 {
+    if (!keyFile.contains(section, key)) {
+        return false;
+    }
+
     return keyFile.booleanValue(section, key);
 }
 
@@ -379,11 +383,16 @@ uint MDesktopEntry::hash() const
 
 QString MDesktopEntry::type() const
 {
+    // Type always has to be present (see isValid())
     return value(DesktopEntrySection, TypeKey);
 }
 
 QString MDesktopEntry::version() const
 {
+    if (!contains(DesktopEntrySection, VersionKey)) {
+        return QString();
+    }
+
     return value(DesktopEntrySection, VersionKey);
 }
 
@@ -394,7 +403,7 @@ QString MDesktopEntry::name() const
     if (!d->translatedName.isNull())
         return d->translatedName;
 
-    QString name = d->keyFile.localizedValue(DesktopEntrySection, NameKey);
+    QString name;
 
     if (contains(DesktopEntrySection, LogicalIdKey)) {
         QString key = value(DesktopEntrySection, LogicalIdKey);
@@ -411,96 +420,169 @@ QString MDesktopEntry::name() const
         }
     }
 
+    if (name.isEmpty()) {
+        name = d->keyFile.localizedValue(DesktopEntrySection, NameKey);
+    }
+
     d->translatedName = name;
     return name;
 }
 
 QString MDesktopEntry::nameUnlocalized() const
 {
+    // Name always has to be present (see isValid())
     return value(DesktopEntrySection, NameKey);
 }
 
 QString MDesktopEntry::genericName() const
 {
+    if (!contains(DesktopEntrySection, GenericNameKey)) {
+        return QString();
+    }
+
     return value(DesktopEntrySection, GenericNameKey);
 }
 
 bool MDesktopEntry::noDisplay() const
 {
+    if (!contains(DesktopEntrySection, NoDisplayKey)) {
+        return false;
+    }
+
     return d_ptr->boolValue(DesktopEntrySection, NoDisplayKey);
 }
 
 QString MDesktopEntry::comment() const
 {
+    if (!contains(DesktopEntrySection, CommentKey)) {
+        return QString();
+    }
+
     return value(DesktopEntrySection, CommentKey);
 }
 
 QString MDesktopEntry::icon() const
 {
+    if (!contains(DesktopEntrySection, IconKey)) {
+        return QString();
+    }
+
     return value(DesktopEntrySection, IconKey);
 }
 
 bool MDesktopEntry::hidden() const
 {
+    if (!contains(DesktopEntrySection, HiddenKey)) {
+        return false;
+    }
+
     return d_ptr->boolValue(DesktopEntrySection, HiddenKey);
 }
 
 QStringList MDesktopEntry::onlyShowIn() const
 {
+    if (!contains(DesktopEntrySection, OnlyShowInKey)) {
+        return QStringList();
+    }
+
     return d_ptr->stringListValue(DesktopEntrySection, OnlyShowInKey);
 }
 
 QStringList MDesktopEntry::notShowIn() const
 {
+    if (!contains(DesktopEntrySection, NotShowInKey)) {
+        return QStringList();
+    }
+
     return d_ptr->stringListValue(DesktopEntrySection, NotShowInKey);
 }
 
 QString MDesktopEntry::tryExec() const
 {
+    if (!contains(DesktopEntrySection, TryExecKey)) {
+        return QString();
+    }
+
     return value(DesktopEntrySection, TryExecKey);
 }
 
 QString MDesktopEntry::exec() const
 {
+    if (!contains(DesktopEntrySection, ExecKey)) {
+        return QString();
+    }
+
     return value(DesktopEntrySection, ExecKey);
 }
 
 QString MDesktopEntry::xMaemoService() const
 {
+    if (!contains(DesktopEntrySection, XMaemoServiceKey)) {
+        return QString();
+    }
+
     return value(DesktopEntrySection, XMaemoServiceKey);
 }
 
 QString MDesktopEntry::path() const
 {
+    if (!contains(DesktopEntrySection, PathKey)) {
+        return QString();
+    }
+
     return value(DesktopEntrySection, PathKey);
 }
 
 bool MDesktopEntry::terminal() const
 {
+    if (!contains(DesktopEntrySection, TerminalKey)) {
+        return false;
+    }
+
     return d_ptr->boolValue(DesktopEntrySection, TerminalKey);
 }
 
 QStringList MDesktopEntry::mimeType() const
 {
+    if (!contains(DesktopEntrySection, MimeTypeKey)) {
+        return QStringList();
+    }
+
     return d_ptr->stringListValue(DesktopEntrySection, MimeTypeKey);
 }
 
 QStringList MDesktopEntry::categories() const
 {
+    if (!contains(DesktopEntrySection, CategoriesKey)) {
+        return QStringList();
+    }
+
     return d_ptr->stringListValue(DesktopEntrySection, CategoriesKey);
 }
 
 bool MDesktopEntry::startupNotify() const
 {
+    if (!contains(DesktopEntrySection, StartupNotifyKey)) {
+        return false;
+    }
+
     return d_ptr->boolValue(DesktopEntrySection, StartupNotifyKey);
 }
 
 QString MDesktopEntry::startupWMClass() const
 {
+    if (!contains(DesktopEntrySection, StartupWMClassKey)) {
+        return QString();
+    }
+
     return value(DesktopEntrySection, StartupWMClassKey);
 }
 
 QString MDesktopEntry::url() const
 {
+    if (!contains(DesktopEntrySection, URLKey)) {
+        return QString();
+    }
+
     return value(DesktopEntrySection, URLKey);
 }

@@ -331,6 +331,10 @@ QString MDesktopEntry::value(const QString &key) const
 
 QString MDesktopEntry::value(const QString &group, const QString &key) const
 {
+    if (!contains(group, key)) {
+        return QString();
+    }
+
     return d_ptr->keyFile.stringValue(group, key);
 }
 
@@ -342,6 +346,10 @@ QStringList MDesktopEntry::stringListValue(const QString &key) const
 
 QStringList MDesktopEntry::stringListValue(const QString &group, const QString &key) const
 {
+    if (!contains(group, key)) {
+        return QStringList();
+    }
+
     return d_ptr->keyFile.stringList(group, key);
 }
 
@@ -436,10 +444,6 @@ QString MDesktopEntry::nameUnlocalized() const
 
 QString MDesktopEntry::genericName() const
 {
-    if (!contains(DesktopEntrySection, GenericNameKey)) {
-        return QString();
-    }
-
     return value(DesktopEntrySection, GenericNameKey);
 }
 
@@ -454,19 +458,11 @@ bool MDesktopEntry::noDisplay() const
 
 QString MDesktopEntry::comment() const
 {
-    if (!contains(DesktopEntrySection, CommentKey)) {
-        return QString();
-    }
-
     return value(DesktopEntrySection, CommentKey);
 }
 
 QString MDesktopEntry::icon() const
 {
-    if (!contains(DesktopEntrySection, IconKey)) {
-        return QString();
-    }
-
     return value(DesktopEntrySection, IconKey);
 }
 
@@ -499,37 +495,21 @@ QStringList MDesktopEntry::notShowIn() const
 
 QString MDesktopEntry::tryExec() const
 {
-    if (!contains(DesktopEntrySection, TryExecKey)) {
-        return QString();
-    }
-
     return value(DesktopEntrySection, TryExecKey);
 }
 
 QString MDesktopEntry::exec() const
 {
-    if (!contains(DesktopEntrySection, ExecKey)) {
-        return QString();
-    }
-
     return value(DesktopEntrySection, ExecKey);
 }
 
 QString MDesktopEntry::xMaemoService() const
 {
-    if (!contains(DesktopEntrySection, XMaemoServiceKey)) {
-        return QString();
-    }
-
     return value(DesktopEntrySection, XMaemoServiceKey);
 }
 
 QString MDesktopEntry::path() const
 {
-    if (!contains(DesktopEntrySection, PathKey)) {
-        return QString();
-    }
-
     return value(DesktopEntrySection, PathKey);
 }
 
@@ -571,18 +551,10 @@ bool MDesktopEntry::startupNotify() const
 
 QString MDesktopEntry::startupWMClass() const
 {
-    if (!contains(DesktopEntrySection, StartupWMClassKey)) {
-        return QString();
-    }
-
     return value(DesktopEntrySection, StartupWMClassKey);
 }
 
 QString MDesktopEntry::url() const
 {
-    if (!contains(DesktopEntrySection, URLKey)) {
-        return QString();
-    }
-
     return value(DesktopEntrySection, URLKey);
 }

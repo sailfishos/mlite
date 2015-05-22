@@ -24,6 +24,7 @@
 #include <QDBusPendingCall>
 #include <QBuffer>
 #include <QStringList>
+#include <QDataStream>
 
 MRemoteActionPrivate::MRemoteActionPrivate()
 {

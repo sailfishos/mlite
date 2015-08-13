@@ -12,9 +12,22 @@
 #include <dconf/dconf.h>
 
 #include <QVariant>
+#include <QEvent>
 
 namespace MDConf
 {
+    class Event : public QEvent
+    {
+    public:
+        enum { TYPE = QEvent::User };
+
+        Event(const char *aPrefix, GStrv aChanges) : QEvent((Type)TYPE),
+            prefix(aPrefix), changes(aChanges) {}
+
+        const char *prefix;
+        GStrv changes;
+    };
+
 
 QVariant convertValue(GVariant *value, int typeHint = QMetaType::UnknownType);
 bool convertValue(const QVariant &variant, GVariant **valp);

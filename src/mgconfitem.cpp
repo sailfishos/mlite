@@ -65,9 +65,9 @@ MGConfItemPrivate::~MGConfItemPrivate()
 
 QByteArray MGConfItemPrivate::convertKey(const QString &key)
 {
-    if (key.startsWith('/'))
+    if (key.startsWith('/')) {
         return key.toUtf8();
-    else {
+    } else {
         QString replaced = key;
         replaced.replace('.', '/');
         qWarning() << "Using dot-separated key names with MGConfItem is deprecated.";
@@ -94,7 +94,7 @@ void MGConfItem::update_value(bool emit_signal)
     QVariant new_value;
     GVariant *v = dconf_client_read(priv->client, priv->dconf_key);
     if (!v) {
-	new_value = priv->value;
+        new_value = priv->value;
     }
 
     new_value = MDConf::convertValue(v);
@@ -134,14 +134,15 @@ void MGConfItem::set(const QVariant &val)
         GError *error = NULL;
         dconf_client_write_fast(priv->client, priv->dconf_key, v, &error);
 
-	if (error) {
-	    qWarning() << error->message;
-	    g_error_free(error);
-	}
+        if (error) {
+            qWarning() << error->message;
+            g_error_free(error);
+        }
 
-	// We will not emit any signals because dconf should take care of that for us.
-    } else
+        // We will not emit any signals because dconf should take care of that for us.
+    } else {
         qWarning() << "Can't store a" << val.typeName();
+    }
 }
 
 void MGConfItem::unset()
@@ -155,38 +156,37 @@ QStringList MGConfItem::listDirs() const
     gint length = 0;
     QByteArray k = priv->dconf_key;
     if (!k.endsWith("/")) {
-      k.append("/");
+        k.append("/");
     }
 
     gchar **dirs = dconf_client_list(priv->client, k.data(), &length);
     GError *error = NULL;
 
     for (gint x = 0; x < length; x++) {
-      const gchar *dir = g_strdup_printf ("%s%s", k.data(), dirs[x]);
-      if (dconf_is_dir(dir, &error)) {
-	// We have to mimic how gconf was behaving.
-	// so we need to chop off trailing slashes.
-	// dconf will also barf if it gets a "path" with 2 slashes.
-	QString d = QString::fromUtf8(dir);
-	if (d.endsWith("/")) {
-	  d.chop(1);
-	}
+        const gchar *dir = g_strdup_printf ("%s%s", k.data(), dirs[x]);
+        if (dconf_is_dir(dir, &error)) {
+            // We have to mimic how gconf was behaving.
+            // so we need to chop off trailing slashes.
+            // dconf will also barf if it gets a "path" with 2 slashes.
+            QString d = QString::fromUtf8(dir);
+            if (d.endsWith("/")) {
+                d.chop(1);
+            }
 
-	children.append(d);
-      }
+            children.append(d);
+        }
 
-      g_free ((gpointer)dir);
+        g_free((gpointer)dir);
 
-      // If we have error set then dconf_is_dir() has returned false so we should be safe here
-      if (error) {
-	qWarning() << "MGConfItem" << error->message;
-	g_error_free(error);
-	error = NULL;
-      }
+        // If we have error set then dconf_is_dir() has returned false so we should be safe here
+        if (error) {
+            qWarning() << "MGConfItem" << error->message;
+            g_error_free(error);
+            error = NULL;
+        }
     }
 
     g_strfreev(dirs);
-
     return children;
 }
 

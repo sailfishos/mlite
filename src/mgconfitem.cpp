@@ -21,6 +21,7 @@ extern "C" {
 #include <dconf.h>
 };
 
+#include <QCoreApplication>
 #include <QString>
 #include <QStringList>
 #include <QByteArray>
@@ -31,20 +32,38 @@ extern "C" {
 
 #include "mdconf_p.h"
 
-struct MGConfItemPrivate {
-    MGConfItemPrivate() :
-        client(dconf_client_new()),
-	handler(0)
-    {}
+struct MGConfItemPrivate : public QObject {
+    MGConfItemPrivate(QString aKey, MGConfItem* aParent);
+    ~MGConfItemPrivate();
+
+    void customEvent(QEvent* event);
+    static QByteArray convertKey(const QString &key);
+    static void changed(DConfClient *, gchar *, GStrv, gchar *, gpointer);
 
     QString key;
     QVariant value;
     DConfClient *client;
     gulong handler;
-    static void notify_trampoline(DConfClient *, gchar *, GStrv, gchar *, gpointer);
+    QByteArray dconf_key;
 };
 
-static QByteArray convertKey(const QString &key)
+MGConfItemPrivate::MGConfItemPrivate(QString aKey, MGConfItem* aParent) : QObject(aParent),
+    key(aKey),
+    client(dconf_client_new()),
+    handler(g_signal_connect(client, "changed", G_CALLBACK(changed), this)),
+    dconf_key(convertKey(aKey))
+{
+    dconf_client_watch_fast(client, dconf_key);
+}
+
+MGConfItemPrivate::~MGConfItemPrivate()
+{
+    g_signal_handler_disconnect(client, handler);
+    dconf_client_unwatch_fast(client, dconf_key);
+    g_object_unref(client);
+}
+
+QByteArray MGConfItemPrivate::convertKey(const QString &key)
 {
     if (key.startsWith('/'))
         return key.toUtf8();
@@ -57,22 +76,23 @@ static QByteArray convertKey(const QString &key)
     }
 }
 
-static QString convertKey(const char *key)
+void MGConfItemPrivate::changed(DConfClient*, gchar *prefix, GStrv changes, gchar*, gpointer data)
 {
-    return QString::fromUtf8(key);
+    MDConf::Event event(prefix, changes);
+    QCoreApplication::sendEvent((MGConfItemPrivate*)data, &event);
 }
 
-void MGConfItemPrivate::notify_trampoline(DConfClient *, gchar *, GStrv, gchar *, gpointer data)
+void MGConfItemPrivate::customEvent(QEvent* event)
 {
-    MGConfItem *item = (MGConfItem *)data;
-    item->update_value(true);
+    if (event->type() == (QEvent::Type)MDConf::Event::TYPE) {
+        ((MGConfItem*)parent())->update_value(true);
+    }
 }
 
 void MGConfItem::update_value(bool emit_signal)
 {
     QVariant new_value;
-    QByteArray k = convertKey(priv->key);
-    GVariant *v = dconf_client_read(priv->client, k.data());
+    GVariant *v = dconf_client_read(priv->client, priv->dconf_key);
     if (!v) {
 	new_value = priv->value;
     }
@@ -108,12 +128,11 @@ QVariant MGConfItem::value(const QVariant &def) const
 
 void MGConfItem::set(const QVariant &val)
 {
-    QByteArray k = convertKey(priv->key);
     GVariant *v = NULL;
-    GError *error = NULL;
 
     if (MDConf::convertValue(val, &v)) {
-	dconf_client_write_fast(priv->client, k.data(), v, &error);
+        GError *error = NULL;
+        dconf_client_write_fast(priv->client, priv->dconf_key, v, &error);
 
 	if (error) {
 	    qWarning() << error->message;
@@ -134,7 +153,7 @@ QStringList MGConfItem::listDirs() const
 {
     QStringList children;
     gint length = 0;
-    QByteArray k = convertKey(priv->key);
+    QByteArray k = priv->dconf_key;
     if (!k.endsWith("/")) {
       k.append("/");
     }
@@ -148,7 +167,7 @@ QStringList MGConfItem::listDirs() const
 	// We have to mimic how gconf was behaving.
 	// so we need to chop off trailing slashes.
 	// dconf will also barf if it gets a "path" with 2 slashes.
-	QString d = convertKey(dir);
+	QString d = QString::fromUtf8(dir);
 	if (d.endsWith("/")) {
 	  d.chop(1);
 	}
@@ -177,24 +196,12 @@ bool MGConfItem::sync()
     return true;
 }
 
-MGConfItem::MGConfItem(const QString &key, QObject *parent)
-    : QObject(parent)
+MGConfItem::MGConfItem(const QString &key, QObject *parent) : QObject(parent),
+    priv(new MGConfItemPrivate(key, this))
 {
-    priv = new MGConfItemPrivate;
-    priv->key = key;
-    priv->handler =
-      g_signal_connect(priv->client, "changed", G_CALLBACK(MGConfItemPrivate::notify_trampoline), this);
-
-    QByteArray k = convertKey(priv->key);
-    dconf_client_watch_fast(priv->client, k.data());
     update_value(false);
 }
 
 MGConfItem::~MGConfItem()
 {
-    g_signal_handler_disconnect(priv->client, priv->handler);
-    QByteArray k = convertKey(priv->key);
-    dconf_client_unwatch_fast(priv->client, k.data());
-    g_object_unref(priv->client);
-    delete priv;
 }

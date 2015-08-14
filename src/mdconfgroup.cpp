@@ -14,8 +14,9 @@
 
 #include <QDebug>
 #include <QMetaProperty>
+#include <QCoreApplication>
 
-class MDConfGroupPrivate
+class MDConfGroupPrivate : public QObject
 {
 public:
     MDConfGroupPrivate()
@@ -39,6 +40,8 @@ public:
 
     void notify(const QByteArray &basePath, const QByteArray &key);
     static void changed(DConfClient *, gchar *prefix, GStrv changes, gchar *, gpointer user_data);
+    void notify(const char *prefix, GStrv changes);
+    void customEvent(QEvent* event);
 
     QByteArray absolutePath;
     QString path;
@@ -407,14 +410,11 @@ void MDConfGroupPrivate::notify(const QByteArray &basePath, const QByteArray &ke
     }
 }
 
-void MDConfGroupPrivate::changed(
-        DConfClient *, gchar *prefix, GStrv changes, gchar *, gpointer user_data)
+void MDConfGroupPrivate::notify(const char *prefix, GStrv changes)
 {
-    MDConfGroupPrivate * const priv = static_cast<MDConfGroupPrivate *>(user_data);
-
     const QByteArray prefixPath = QByteArray(prefix);
     // Early exit if the notification is not relevant to this group.
-    if (!prefixPath.startsWith(priv->absolutePath) && !priv->absolutePath.startsWith(prefixPath))
+    if (!prefixPath.startsWith(absolutePath) && !absolutePath.startsWith(prefixPath))
         return;
 
     // Construct the group path and key for each change and perform updates.
@@ -424,6 +424,20 @@ void MDConfGroupPrivate::changed(
         const QByteArray basePath = absoluteKey.mid(0, pathLength);
         const QByteArray key = absoluteKey.mid(pathLength);
 
-        priv->notify(basePath, key);
+        notify(basePath, key);
     }
+}
+
+void MDConfGroupPrivate::customEvent(QEvent* event)
+{
+    if (event->type() == (QEvent::Type)MDConf::Event::TYPE) {
+        MDConf::Event* dconfEvent = (MDConf::Event*)event;
+        notify(dconfEvent->prefix, dconfEvent->changes);
+    }
+}
+
+void MDConfGroupPrivate::changed(DConfClient *, gchar *prefix, GStrv changes, gchar *, gpointer data)
+{
+    MDConf::Event event(prefix, changes);
+    QCoreApplication::sendEvent((MDConfGroupPrivate*)data, &event);
 }

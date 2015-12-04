@@ -3,7 +3,7 @@ Summary:    Useful classes originating from MeeGo Touch
 Version:    0.2.16
 Release:    1
 Group:      System/Libraries
-License:    LGPL v2.1
+License:    LGPLv2.1
 URL:        http://github.com/nemomobile/mlite
 Source0:    %{name}-%{version}.tar.bz2
 Requires(post): /sbin/ldconfig

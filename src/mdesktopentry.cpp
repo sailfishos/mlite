@@ -364,8 +364,11 @@ bool MDesktopEntry::isValid() const
         return false;
     }
 
-    // In case of an application the Exec key needs to be present
-    if (type() == "Application" && !contains(DesktopEntrySection, ExecKey)) {
+    // In case of an application either the Exec key needs to be present or D-Bus activation supported
+    if (type() == QStringLiteral("Application") &&
+            !contains(DesktopEntrySection, ExecKey) &&
+            // MER#1557: Migrate to freedesktop.org DBusActivatable API
+            !contains(DesktopEntrySection, XMaemoServiceKey)) {
         return false;
     }
 

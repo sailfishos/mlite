@@ -76,6 +76,43 @@ public:
      */
     QString toString() const;
 
+    /*!
+     * \brief Verifies this remote action has been fully populated.
+     *
+     * \return whether the remote action has sufficient information to trigger.
+     */
+    bool isValid() const;
+
+    /*!
+     * \brief The service name of the D-Bus object to be called.
+     * \return a D-Bus service name.
+     */
+    QString serviceName() const;
+
+    /*!
+     * \brief The object path of the D-Bus object to be called.
+     * \return a D-Bus object path.
+     */
+    QString objectPath() const;
+
+    /*!
+     * \brief The interface of the D-Bus object to be called.
+     * \return A D-Bus interface.
+     */
+    QString interface() const;
+
+    /*!
+     * \brief The name of the D-Bus method to call.
+     * \return A D-Bus method name.
+     */
+    QString methodName() const;
+
+    /*!
+     * \brief The arguments of the D-Bus call
+     * \return a list of arguments.
+     */
+    QVariantList arguments() const;
+
 public Q_SLOTS:
     /*!
      * \brief A slot for calling the D-Bus function when the action is triggered

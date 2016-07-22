@@ -1,2 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS += mlitenotificationtool
+SUBDIRS += \
+        mlitenotificationtool \
+        mliteremoteaction

@@ -21,6 +21,15 @@ Select set of useful classes from meegotouch that do not require
 taking in all of meegotouch.
 
 
+%package notificationtool
+Summary:    mlite notification tool package
+Group:      System/Libraries
+Requires:   %{name} = %{version}-%{release}
+
+%description notificationtool
+%{summary}.
+
+
 %package devel
 Summary:    mlite development package
 Group:      System/Libraries
@@ -59,6 +68,11 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %{_libdir}/libmlite5.so.*
+%{_libexecdir}/mliteremoteaction
+
+%files notificationtool
+%defattr(-,root,root,-)
+%{_bindir}/mlitenotificationtool
 
 %files devel
 %defattr(-,root,root,-)

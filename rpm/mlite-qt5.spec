@@ -1,6 +1,6 @@
 Name:       mlite-qt5
 Summary:    Useful classes originating from MeeGo Touch
-Version:    0.2.16
+Version:    0.2.21.1
 Release:    1
 Group:      System/Libraries
 License:    LGPLv2.1

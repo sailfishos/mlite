@@ -101,7 +101,12 @@ void MGConfItem::update_value(bool emit_signal)
     if (v)
         g_variant_unref(v);
 
-    if (new_value != priv->value || new_value.userType() != priv->value.userType()) {
+    if (new_value != priv->value
+            || new_value.userType() != priv->value.userType()
+            || (new_value.type() == QVariant::Double
+                && priv->value.type() == QVariant::Double
+                // The "!=" equality check may fail for doubles depending on precision, check again
+                && !qFuzzyCompare(new_value.toDouble(), priv->value.toDouble()))) {
         priv->value = new_value;
         if (emit_signal)
             emit valueChanged();

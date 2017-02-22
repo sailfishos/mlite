@@ -75,6 +75,7 @@ QVariant MDConf::convertValue(GVariant *value, int typeHint)
             for (gsize i = 0; i < length ; ++i)
                 stringList.append(QString::fromUtf8(strings[i]));
 
+            g_free(strings);
             return stringList;
         } else if (g_variant_type_equal(type, G_VARIANT_TYPE_BYTESTRING_ARRAY)) {
             QList<QByteArray> stringList;
@@ -84,6 +85,7 @@ QVariant MDConf::convertValue(GVariant *value, int typeHint)
             for (gsize i = 0; i < length ; ++i)
                 stringList.append(strings[i]);
 
+            g_free(strings);
             return QVariant::fromValue(stringList);
         } else if (g_variant_type_equal(type, G_VARIANT_TYPE_VARDICT)) {
             QVariantMap variantMap;

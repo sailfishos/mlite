@@ -1,10 +1,10 @@
 Name:       mlite-qt5
 Summary:    Useful classes originating from MeeGo Touch
-Version:    0.2.16
+Version:    0.2.23
 Release:    1
 Group:      System/Libraries
 License:    LGPLv2.1
-URL:        http://github.com/nemomobile/mlite
+URL:        https://git.merproject.org/mer-core/mlite
 Source0:    %{name}-%{version}.tar.bz2
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig

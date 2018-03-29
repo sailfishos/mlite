@@ -84,7 +84,7 @@ DEFINES += MLITE_LIBRARY
 
 PCFILE=mlite$${NODASH_QT_VERSION}.pc
 configure($${PWD}/$${PCFILE}.in)
-pcfiles.files = $$PCFILE
+pcfiles.files = $$OUT_PWD/$$PCFILE
 pcfiles.CONFIG = no_check_exist
 pcfiles.path += $$INSTALL_ROOT/$$[QT_INSTALL_LIBS]/pkgconfig
 

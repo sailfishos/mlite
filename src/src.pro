@@ -41,7 +41,9 @@ packagesExist(dconf) {
     warning("dconf not found; MGConfItem will not be built")
 }
 
-system(qdbusxml2cpp notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
+QDBUSXML2CPP = $$[QT_INSTALL_BINS]/qdbusxml2cpp
+
+system($$QDBUSXML2CPP notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
 
 SOURCES += mnotificationmanagerproxy.cpp \
            mnotification.cpp \

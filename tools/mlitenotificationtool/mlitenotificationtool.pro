@@ -8,6 +8,8 @@ LIBS = -lmlite5
 
 SOURCES += mlitenotificationtool.cpp
 INSTALLS += target
-QT += dbus
+QT = \
+    core \
+    dbus
 
 target.path = /usr/bin

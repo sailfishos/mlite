@@ -1,7 +1,9 @@
 TEMPLATE = app
 TARGET = mliteremoteaction
 
-QT += dbus
+QT = \
+    core \
+    dbus
 
 INCLUDEPATH += $$PWD/../../src
 DEPENDPATH += $$PWD/../../src

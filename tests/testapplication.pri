@@ -6,7 +6,7 @@ pro_file_basename ~= s/\\.pro$//
 TEMPLATE = app
 TARGET = $${pro_file_basename}.bin
 
-QT = core testlib
+QT = core dbus testlib
 
 SOURCES = $${pro_file_basename}.cpp
 

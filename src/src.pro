@@ -41,7 +41,9 @@ packagesExist(dconf) {
     warning("dconf not found; MGConfItem will not be built")
 }
 
-system(qdbusxml2cpp notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
+QDBUSXML2CPP = $$[QT_INSTALL_BINS]/qdbusxml2cpp
+
+system($$QDBUSXML2CPP notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
 
 SOURCES += mnotificationmanagerproxy.cpp \
            mnotification.cpp \
@@ -82,7 +84,7 @@ DEFINES += MLITE_LIBRARY
 
 PCFILE=mlite$${NODASH_QT_VERSION}.pc
 configure($${PWD}/$${PCFILE}.in)
-pcfiles.files = $$PCFILE
+pcfiles.files = $$OUT_PWD/$$PCFILE
 pcfiles.CONFIG = no_check_exist
 pcfiles.path += $$INSTALL_ROOT/$$[QT_INSTALL_LIBS]/pkgconfig
 

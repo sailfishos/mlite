@@ -31,56 +31,6 @@
 
 #include <unistd.h>
 
-MRemoteActionUnprivilegedInvoker::MRemoteActionUnprivilegedInvoker(QObject *parent)
-    : QProcess(parent)
-{
-    connect(this, static_cast<void (QProcess::*)(int,QProcess::ExitStatus)>(&QProcess::finished),
-            this, &MRemoteActionUnprivilegedInvoker::invokeNextCall);
-}
-
-MRemoteActionUnprivilegedInvoker::~MRemoteActionUnprivilegedInvoker()
-{
-}
-
-void MRemoteActionUnprivilegedInvoker::invoke(const MRemoteAction &action)
-{
-    m_queuedCalls.append(action.toString());
-
-    if (state() == NotRunning) {
-        invokeNextCall(0, QProcess::NormalExit);
-    }
-}
-
-void MRemoteActionUnprivilegedInvoker::setupChildProcess()
-{
-    const int uid = getuid();
-    const int gid = getgid();
-
-    if (seteuid(uid) < 0) {
-        fprintf(stderr, "Could not seteuid to actual user");
-    }
-    if (setegid(gid) < 0) {
-        fprintf(stderr, "Could not setegid to actual group");
-    }
-}
-
-void MRemoteActionUnprivilegedInvoker::invokeNextCall(int code, ExitStatus status)
-{
-    if (status == CrashExit) {
-        qWarning() << "/usr/libexec/mliteremoteaction crashed";
-    } else if (code != 0) {
-        qWarning() << readAllStandardError().constData();
-    }
-
-    if (m_queuedCalls.isEmpty()) {
-        return;
-    }
-
-    const QString call = m_queuedCalls.takeFirst();
-
-    start(QStringLiteral("/usr/libexec/mliteremoteaction"), QStringList() << call);
-}
-
 MRemoteActionPrivate::MRemoteActionPrivate()
 {
 }
@@ -225,10 +175,7 @@ void MRemoteAction::trigger()
     const int egid = getegid();
 
     if (uid != euid || gid != egid) {
-        static QThreadStorage<MRemoteActionUnprivilegedInvoker> invoker;
-
-        invoker.localData().invoke(*this);
-
+        QProcess::startDetached(QStringLiteral("/usr/libexec/mliteremoteaction"), { toString() });
         return;
     }
 

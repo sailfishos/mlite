@@ -51,22 +51,4 @@ protected:
     MRemoteAction *q_ptr;
 };
 
-class MRemoteActionUnprivilegedInvoker : public QProcess
-{
-    Q_OBJECT
-public:
-    MRemoteActionUnprivilegedInvoker(QObject *parent = 0);
-    ~MRemoteActionUnprivilegedInvoker();
-
-    Q_INVOKABLE void invoke(const MRemoteAction &action);
-
-protected:
-    void setupChildProcess() override;
-
-private:
-    void invokeNextCall(int code, ExitStatus status);
-
-    QStringList m_queuedCalls;
-};
-
 #endif

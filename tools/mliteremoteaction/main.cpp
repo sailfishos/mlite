@@ -20,8 +20,21 @@
 #include <QDBusReply>
 #include <QDebug>
 
+#include <unistd.h>
+
 int main(int argc, char *argv[])
 {
+    const gid_t gid = getgid();
+    const uid_t uid = getuid();
+
+    if (setregid(gid, gid) < 0) {
+        fprintf(stderr, "Could not setegid to actual group\n");
+        return EXIT_FAILURE;
+    } else if (setreuid(uid, uid) < 0) {
+        fprintf(stderr, "Could not seteuid to actual user\n");
+        return EXIT_FAILURE;
+    }
+
     QCoreApplication application(argc, argv);
 
     const QStringList arguments = application.arguments();
@@ -29,7 +42,7 @@ int main(int argc, char *argv[])
     MRemoteAction action(arguments.value(1));
 
     if (!action.isValid()) {
-        fprintf(stderr, "Usage: /usr/libexec/mliteremoteaction \"<service> <path> <interface> <method> [<arguments>]\"");
+        fprintf(stderr, "Usage: /usr/libexec/mliteremoteaction \"<service> <path> <interface> <method> [<arguments>]\"\n");
         return 1;
     }
 
@@ -40,7 +53,7 @@ int main(int argc, char *argv[])
     QDBusMessage reply = QDBusConnection::sessionBus().call(message);
 
     if (reply.type() == QDBusMessage::ErrorMessage) {
-        fprintf(stderr, "%s", qPrintable(reply.errorMessage()));
+        fprintf(stderr, "%s\n", qPrintable(reply.errorMessage()));
 
         return 1;
     }

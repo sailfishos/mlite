@@ -25,9 +25,6 @@
 #include <QBuffer>
 #include <QStringList>
 #include <QDataStream>
-#include <QThreadStorage>
-
-#include <QDebug>
 
 #include <unistd.h>
 

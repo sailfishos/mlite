@@ -36,6 +36,9 @@ public:
     MRemoteActionPrivate();
     virtual ~MRemoteActionPrivate();
 
+    void trigger(bool wait);
+    QString toString() const;
+
     //! The name of the D-Bus service to call
     QString serviceName;
     //! The path of the D-Bus object to call

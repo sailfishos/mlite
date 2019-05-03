@@ -25,9 +25,6 @@
 #include <QBuffer>
 #include <QStringList>
 #include <QDataStream>
-#include <QThreadStorage>
-
-#include <QDebug>
 
 #include <unistd.h>
 
@@ -37,6 +34,54 @@ MRemoteActionPrivate::MRemoteActionPrivate()
 
 MRemoteActionPrivate::~MRemoteActionPrivate()
 {
+}
+
+void MRemoteActionPrivate::trigger(bool wait)
+{
+    const int uid = getuid();
+    const int gid = getgid();
+    const int euid = geteuid();
+    const int egid = getegid();
+
+    if (uid != euid || gid != egid) {
+        QProcess::startDetached(QStringLiteral("/usr/libexec/mliteremoteaction"), { toString() });
+        return;
+    }
+
+    QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath, interface, methodName);
+    msg.setArguments(arguments);
+
+    if (wait) {
+        QDBusConnection::sessionBus().call(msg);
+    } else {
+        QDBusConnection::sessionBus().asyncCall(msg);
+    }
+}
+
+QString MRemoteActionPrivate::toString() const
+{
+    QString s;
+    if (!serviceName.isEmpty() && !objectPath.isEmpty() && !interface.isEmpty() && !methodName.isEmpty()) {
+        s.append(serviceName).append(' ');
+        s.append(objectPath).append(' ');
+        s.append(interface).append(' ');
+        s.append(methodName);
+
+        for (const QVariant &arg : arguments) {
+            // Serialize the QVariant into a QBuffer
+            QBuffer buffer;
+            buffer.open(QIODevice::ReadWrite);
+            QDataStream stream(&buffer);
+            stream << arg;
+            buffer.close();
+
+            // Encode the contents of the QBuffer in Base64
+            s.append(' ');
+            s.append(buffer.buffer().toBase64().data());
+        }
+    }
+
+    return s;
 }
 
 MRemoteAction::MRemoteAction(const QString &serviceName, const QString &objectPath, const QString &interface, const QString &methodName, const QList<QVariant> &arguments, QObject *parent) :
@@ -67,29 +112,7 @@ MRemoteAction::~MRemoteAction()
 QString MRemoteAction::toString() const
 {
     Q_D(const MRemoteAction);
-
-    QString s;
-    if (!d->serviceName.isEmpty() && !d->objectPath.isEmpty() && !d->interface.isEmpty() && !d->methodName.isEmpty()) {
-        s.append(d->serviceName).append(' ');
-        s.append(d->objectPath).append(' ');
-        s.append(d->interface).append(' ');
-        s.append(d->methodName);
-
-        foreach(const QVariant & arg, d->arguments) {
-            // Serialize the QVariant into a QBuffer
-            QBuffer buffer;
-            buffer.open(QIODevice::ReadWrite);
-            QDataStream stream(&buffer);
-            stream << arg;
-            buffer.close();
-
-            // Encode the contents of the QBuffer in Base64
-            s.append(' ');
-            s.append(buffer.buffer().toBase64().data());
-        }
-    }
-
-    return s;
+    return d->toString();
 }
 
 void MRemoteAction::fromString(const QString &string)
@@ -168,19 +191,11 @@ QVariantList MRemoteAction::arguments() const
 void MRemoteAction::trigger()
 {
     Q_D(MRemoteAction);
+    d->trigger(false);
+}
 
-    const int uid = getuid();
-    const int gid = getgid();
-    const int euid = geteuid();
-    const int egid = getegid();
-
-    if (uid != euid || gid != egid) {
-        QProcess::startDetached(QStringLiteral("/usr/libexec/mliteremoteaction"), { toString() });
-        return;
-    }
-
-    QDBusMessage msg = QDBusMessage::createMethodCall(d->serviceName, d->objectPath, d->interface, d->methodName);
-    msg.setArguments(d->arguments);
-
-    QDBusConnection::sessionBus().asyncCall(msg);
+void MRemoteAction::triggerAndWait()
+{
+    Q_D(MRemoteAction);
+    d->trigger(true);
 }

@@ -119,6 +119,11 @@ public Q_SLOTS:
      */
     void trigger();
 
+    /*!
+     * \brief Triggers the remote action and waits for reply.
+     */
+    void triggerAndWait();
+
 protected:
     //! A pointer to the private implementation class
     MRemoteActionPrivate *d_ptr;

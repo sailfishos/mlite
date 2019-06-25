@@ -45,6 +45,8 @@ public:
 
     QByteArray absolutePath;
     QString path;
+    QStringList excludedPropertyNames;
+    QVector<int> excludedPropertyIndexes;
     QList<MDConfGroup *> children;
     MDConfGroup *group;
     MDConfGroup *scope;
@@ -111,9 +113,20 @@ void MDConfGroup::resolveMetaObject(int propertyOffset)
         propertyOffset = staticMetaObject.propertyCount();
     priv->propertyOffset = propertyOffset;
 
+    for (const QString &propertyName : priv->excludedPropertyNames) {
+        const int index = metaObject->indexOfProperty(propertyName.toUtf8().constData());
+        if (index >= priv->propertyOffset) {
+            priv->excludedPropertyIndexes.append(index);
+        }
+    }
+
     // Connect all the notify signals of the derived type's properties to the propertyChanged()
     // slot.
     for (int i = propertyOffset; i < metaObject->propertyCount(); ++i) {
+        if (priv->excludedPropertyIndexes.contains(i)) {
+            continue;
+        }
+
         const QMetaProperty property = metaObject->property(i);
 
         if (property.hasNotifySignal()) {
@@ -178,6 +191,20 @@ void MDConfGroup::setPath(const QString &path)
         } else if (priv->scope && !priv->scope->priv->absolutePath.isEmpty()) {
             priv->resolveProperties(priv->scope->priv->absolutePath);
         }
+    }
+}
+
+QStringList MDConfGroup::excludedProperties() const
+{
+    return priv->excludedPropertyNames;
+}
+
+void MDConfGroup::setExcludedProperties(const QStringList &properties)
+{
+    if (priv->propertyOffset >= 0 && priv->excludedPropertyNames != properties) {
+        priv->excludedPropertyNames = properties;
+
+        emit excludedPropertiesChanged();
     }
 }
 
@@ -287,7 +314,7 @@ void MDConfGroup::propertyChanged()
 
     for (int i = priv->propertyOffset; i < metaObject->propertyCount(); ++i) {
         const QMetaProperty property = metaObject->property(i);
-        if (property.notifySignalIndex() == notifyIndex) {
+        if (property.notifySignalIndex() == notifyIndex && !priv->excludedPropertyIndexes.contains(i)) {
             MDConf::write(
                         priv->client,
                         priv->absolutePath + property.name(),
@@ -344,8 +371,11 @@ void MDConfGroupPrivate::resolveProperties(const QByteArray &scopePath)
     // Iterate over the object's properties and read the corresponding values from dconf
     // and write them to the property.
     const QMetaObject * const metaObject = group->metaObject();
-    for (int i = propertyOffset; i < metaObject->propertyCount(); ++i)
-        readValue(metaObject->property(i));
+    for (int i = propertyOffset; i < metaObject->propertyCount(); ++i) {
+        if (!excludedPropertyIndexes.contains(i)) {
+            readValue(metaObject->property(i));
+        }
+    }
 
     MDConf::watch(client, absolutePath, synchronous);
 
@@ -387,12 +417,15 @@ void MDConfGroupPrivate::notify(const QByteArray &basePath, const QByteArray &ke
         const QMetaObject *const metaObject = group->metaObject();
         if (!key.isEmpty()) {
             const int propertyIndex = metaObject->indexOfProperty(key);
-            if (propertyIndex >= propertyOffset)
+            if (propertyIndex >= propertyOffset && !excludedPropertyIndexes.contains(propertyIndex))
                 readValue(metaObject->property(propertyIndex));
             emit group->valueChanged(QString::fromUtf8(key));
         } else {
-            for (int i = propertyOffset; i < metaObject->propertyCount(); ++i)
-                readValue(metaObject->property(i));
+            for (int i = propertyOffset; i < metaObject->propertyCount(); ++i) {
+                if (!excludedPropertyIndexes.contains(i)) {
+                    readValue(metaObject->property(i));
+                }
+            }
             emit group->valuesChanged();
         }
     } else for (int i = 0; i < children.count(); ++i) {

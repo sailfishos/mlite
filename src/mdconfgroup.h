@@ -66,6 +66,7 @@ class MLITESHARED_EXPORT MDConfGroup : public QObject
     Q_OBJECT
     Q_PROPERTY(bool synchronous READ isSynchronous WRITE setSynchronous NOTIFY synchronousChanged)
     Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
+    Q_PROPERTY(QStringList exclude READ excludedProperties WRITE setExcludedProperties NOTIFY excludedPropertiesChanged)
     Q_PROPERTY(MDConfGroup *scope READ scope WRITE setScope NOTIFY scopeChanged)
 public:
 
@@ -135,6 +136,12 @@ public:
      */
     void setPath(const QString &path);
 
+
+    /*!
+        Returns a list of names of properties which won't be syned to the backing store.
+    */
+    QStringList excludedProperties() const;
+
     /*!
         Returns an MDConfGroup's parent scope.
     */
@@ -198,6 +205,7 @@ public slots:
 signals:
     void synchronousChanged();
     void pathChanged();
+    void excludedPropertiesChanged();
     void scopeChanged();
     /*!
         Signals that the value associated with \a key has changed.
@@ -218,6 +226,14 @@ protected:
         properties are bound.
      */
     void resolveMetaObject(int propertyOffset = -1);
+
+    /*!
+        Sets a list of names of \a properties which won't be syned to the backing store.
+
+        This must be called before resolveMetaObject to have any effect.
+     */
+    void setExcludedProperties(const QStringList &properties);
+
 
 private slots:
     void propertyChanged();

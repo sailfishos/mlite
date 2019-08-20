@@ -4,7 +4,7 @@ Version:    0.2.23
 Release:    1
 Group:      System/Libraries
 License:    LGPLv2.1
-URL:        https://git.merproject.org/mer-core/mlite
+URL:        https://git.sailfishos.org/mer-core/mlite
 Source0:    %{name}-%{version}.tar.bz2
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -43,11 +43,9 @@ Development files needed for using the mlite library
 Summary:    Test suite for mlite-qt5
 Group:      System/Libraries
 Requires:   %{name} = %{version}-%{release}
-Requires:   dbus-x11
 
 %description tests
 Test suite for mlite-qt5.
-
 
 %prep
 %setup -q -n %{name}-%{version}

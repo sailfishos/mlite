@@ -4,7 +4,7 @@ Version:    0.2.23
 Release:    1
 Group:      System/Libraries
 License:    LGPLv2.1
-URL:        https://git.merproject.org/mer-core/mlite
+URL:        https://git.sailfishos.org/mer-core/mlite
 Source0:    %{name}-%{version}.tar.bz2
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig

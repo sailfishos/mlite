@@ -2,8 +2,7 @@ Name:       mlite-qt5
 Summary:    Useful classes originating from MeeGo Touch
 Version:    0.2.23
 Release:    1
-Group:      System/Libraries
-License:    LGPLv2.1
+License:    LGPLv2
 URL:        https://git.sailfishos.org/mer-core/mlite
 Source0:    %{name}-%{version}.tar.bz2
 Requires(post): /sbin/ldconfig
@@ -23,7 +22,6 @@ taking in all of meegotouch.
 
 %package notificationtool
 Summary:    mlite notification tool package
-Group:      System/Libraries
 Requires:   %{name} = %{version}-%{release}
 
 %description notificationtool
@@ -32,7 +30,6 @@ Requires:   %{name} = %{version}-%{release}
 
 %package devel
 Summary:    mlite development package
-Group:      System/Libraries
 Requires:   %{name} = %{version}-%{release}
 
 %description devel
@@ -41,7 +38,6 @@ Development files needed for using the mlite library
 
 %package tests
 Summary:    Test suite for mlite-qt5
-Group:      System/Libraries
 Requires:   %{name} = %{version}-%{release}
 
 %description tests
@@ -65,6 +61,7 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE.LGPL
 %{_libdir}/libmlite5.so.*
 %{_libexecdir}/mliteremoteaction
 

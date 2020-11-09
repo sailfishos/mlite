@@ -4,7 +4,8 @@
 **
 ** Copyright (C) 2010, 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** Copyright (C) 2011 Intel Corp.
-** Copyright (C) 2012, 2013 Jolla Ltd.
+** Copyright (C) 2012 - 2016 Jolla Ltd.
+** Copyright (C) 2020 Open Mobile Platform LLC.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -49,6 +50,7 @@ const QString URLKey("URL");
 const QString LogicalIdKey("X-MeeGo-Logical-Id");
 const QString TranslationCatalogKey("X-MeeGo-Translation-Catalog");
 const QString XMaemoServiceKey("X-Maemo-Service");
+const QString SailjailSection("Sailjail");
 
 
 GKeyFileWrapper::GKeyFileWrapper()
@@ -208,6 +210,11 @@ bool GKeyFileWrapper::contains(const QString &section, const QString &key) const
     return g_key_file_has_key(m_key_file, section_utf8, key_utf8, NULL);
 }
 
+bool GKeyFileWrapper::hasSection(const QString &section) const
+{
+    QByteArray section_utf8 = section.toUtf8();
+    return g_key_file_has_group(m_key_file, section_utf8);
+}
 
 
 MDesktopEntryPrivate::MDesktopEntryPrivate(const QString &fileName)
@@ -560,4 +567,9 @@ QString MDesktopEntry::startupWMClass() const
 QString MDesktopEntry::url() const
 {
     return value(DesktopEntrySection, URLKey);
+}
+
+bool MDesktopEntry::isSandboxed() const
+{
+    return d_ptr->keyFile.hasSection(SailjailSection);
 }

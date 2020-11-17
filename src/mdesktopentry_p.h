@@ -37,6 +37,7 @@ public:
     bool booleanValue(const QString &section, const QString &key) const;
     QStringList stringList(const QString &section, const QString &key) const;
     bool contains(const QString &section, const QString &key) const;
+    bool hasSection(const QString &section) const;
 
 private:
     GKeyFile *m_key_file;

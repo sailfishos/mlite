@@ -5,6 +5,7 @@
 ** Copyright (C) 2010, 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** Copyright (C) 2011 Intel Corp.
 ** Copyright (C) 2012, 2013 Jolla Ltd.
+** Copyright (C) 2020 Open Mobile Platform LLC.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -248,6 +249,11 @@ public:
      * \return true if desktop file can be parsed
      */
     static bool readDesktopFile(QIODevice &device, QMap<QString, QString> &desktopEntriesMap);
+
+    /*!
+     * Returns whether the application is sandboxed.
+     */
+    bool isSandboxed() const;
 
 protected:
     /*! \internal */

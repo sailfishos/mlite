@@ -50,7 +50,7 @@ const QString URLKey("URL");
 const QString LogicalIdKey("X-MeeGo-Logical-Id");
 const QString TranslationCatalogKey("X-MeeGo-Translation-Catalog");
 const QString XMaemoServiceKey("X-Maemo-Service");
-const QString SailjailSection("Sailjail");
+const QString SailjailSection("X-Sailjail");
 
 
 GKeyFileWrapper::GKeyFileWrapper()

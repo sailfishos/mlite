@@ -27,7 +27,7 @@ const auto TranslationKey = QStringLiteral("translation-key");
 const auto TranslationCatalog = QStringLiteral("translation-catalog");
 const auto TranslationDirectory = QStringLiteral("/usr/share/translations");
 const auto TranslationSeparator = QStringLiteral("-");
-const auto SailjailSection = QStringLiteral("Sailjail");
+const auto SailjailSection = QStringLiteral("X-Sailjail");
 const auto SailjailPermissionsKey = QStringLiteral("Permissions");
 
 QPair<QStringRef, QStringRef> getField(const QString &line)

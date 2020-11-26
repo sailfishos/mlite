@@ -20,7 +20,7 @@
 
 namespace {
 const auto PermissionFileDirectory = QStringLiteral("/etc/sailjail/permissions/");
-const auto ProfileSuffix = QStringLiteral(".profile");
+const auto PermissionSuffix = QStringLiteral(".permission");
 const auto Prefix = QStringLiteral("x-sailjail-");
 const auto Description = QStringLiteral("description");
 const auto TranslationKey = QStringLiteral("translation-key");
@@ -142,8 +142,8 @@ QList<MPermission> MPermission::fromDesktopEntry(const MDesktopEntry &entry)
         name = name.trimmed();
         if (name.startsWith('!') || name.startsWith('?'))
             name = name.remove(0, 1).trimmed();
-        if (!name.endsWith(ProfileSuffix))
-            name.append(ProfileSuffix);
+        if (!name.endsWith(PermissionSuffix))
+            name.append(PermissionSuffix);
         MPermission permission(PermissionFileDirectory + name);
         if (permission.isValid())
             permissions.append(permission);

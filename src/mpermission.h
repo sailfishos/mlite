@@ -27,10 +27,10 @@ class MLITESHARED_EXPORT MPermission
 {
 public:
     /*!
-     * Reads profile file for the permission and constructs a new
+     * Reads permission file for the permission and constructs a new
      * MPermission instance.
      *
-     * \param file name of the profile file to read.
+     * \param file name of the permission file to read.
      */
     MPermission(const QString &fileName);
 
@@ -47,7 +47,7 @@ public:
     ~MPermission();
 
     /*!
-     * Constructs a list of MPermission instances from profiles named
+     * Constructs a list of MPermission instances from permissions named
      * by MDesktopEntry.
      *
      * \param MDesktopEntry to read permissions from.

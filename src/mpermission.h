@@ -77,6 +77,20 @@ public:
      */
     QString descriptionUnlocalized() const;
 
+    /*!
+     * Returns long description for the permission that complements
+     * description and provides more information about the permission.
+     * Localized if available, otherwise the same as
+     * longDescriptionUnlocalized.
+     */
+    QString longDescription() const;
+
+    /*!
+     * Returns unlocalized long description for the permission. Empty
+     * string if the permission is not valid.
+     */
+    QString longDescriptionUnlocalized() const;
+
 protected:
     /*! \internal */
     //! Pointer to the private class

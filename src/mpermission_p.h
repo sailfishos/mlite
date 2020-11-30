@@ -29,8 +29,10 @@ public:
 
     QString fileName;
     QString fallbackDescription;
+    QString fallbackLongDescription;
     QString translationCatalog;
-    QString translationKey;
+    QString descriptionTranslationKey;
+    QString longDescriptionTranslationKey;
 
     static QHash<QString, QTranslator *> s_translators;
 };

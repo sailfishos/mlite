@@ -23,7 +23,9 @@ const auto PermissionFileDirectory = QStringLiteral("/etc/sailjail/permissions/"
 const auto PermissionSuffix = QStringLiteral(".permission");
 const auto Prefix = QStringLiteral("x-sailjail-");
 const auto Description = QStringLiteral("description");
-const auto TranslationKey = QStringLiteral("translation-key");
+const auto DescriptionTranslationKey = QStringLiteral("translation-key-description");
+const auto LongDescription = QStringLiteral("long-description");
+const auto LongDescriptionTranslationKey = QStringLiteral("translation-key-long-description");
 const auto TranslationCatalog = QStringLiteral("translation-catalog");
 const auto TranslationDirectory = QStringLiteral("/usr/share/translations");
 const auto TranslationSeparator = QStringLiteral("-");
@@ -69,27 +71,40 @@ MPermissionPrivate::MPermissionPrivate(const QString &fileName) :
 
     QTextStream stream(&file);
     QString description;
+    QString descriptionLong;
     QString key;
+    QString keyLong;
     QString catalog;
-    while (!stream.atEnd() && (description.isEmpty() || key.isEmpty() || catalog.isEmpty())) {
+    auto missing = [&] {
+        return description.isEmpty() || key.isEmpty()
+                || descriptionLong.isEmpty() || keyLong.isEmpty()
+                || catalog.isEmpty();
+    };
+    while (!stream.atEnd() && missing()) {
         QString line = stream.readLine();
         QPair<QStringRef, QStringRef> field = getField(line);
         if (field.first.isEmpty()) {
             continue;
         } else if (field.first == Description) {
             description = field.second.toString();
-        } else if (field.first == TranslationKey) {
+        } else if (field.first == LongDescription) {
+            descriptionLong = field.second.toString();
+        } else if (field.first == DescriptionTranslationKey) {
             key = field.second.toString();
+        } else if (field.first == LongDescriptionTranslationKey) {
+            keyLong = field.second.toString();
         } else if (field.first == TranslationCatalog) {
             catalog = field.second.toString();
         }
     }
 
-    if (description.isEmpty() || key.isEmpty() || catalog.isEmpty()) {
+    if (description.isEmpty()) {
         qWarning() << "Permission file" << file.fileName() << "is missing a required field.";
     } else {
         fallbackDescription = description;
-        translationKey = key;
+        fallbackLongDescription = descriptionLong;
+        descriptionTranslationKey = key;
+        longDescriptionTranslationKey = keyLong;
         translationCatalog = catalog;
     }
 }
@@ -97,8 +112,10 @@ MPermissionPrivate::MPermissionPrivate(const QString &fileName) :
 MPermissionPrivate::MPermissionPrivate(const MPermissionPrivate &other) :
     fileName(other.fileName),
     fallbackDescription(other.fallbackDescription),
+    fallbackLongDescription(other.fallbackLongDescription),
     translationCatalog(other.translationCatalog),
-    translationKey(other.translationKey)
+    descriptionTranslationKey(other.descriptionTranslationKey),
+    longDescriptionTranslationKey(other.longDescriptionTranslationKey)
 {
 }
 
@@ -165,17 +182,34 @@ bool MPermission::isValid() const
 
 QString MPermission::description() const
 {
-    if (d_ptr->translationCatalog.isEmpty() || d_ptr->translationKey.isEmpty())
+    if (d_ptr->translationCatalog.isEmpty() || d_ptr->descriptionTranslationKey.isEmpty())
         return d_ptr->fallbackDescription;
 
     QString description;
     QTranslator *translator = d_ptr->translator();
     if (translator)
-        description = translator->translate(0, d_ptr->translationKey.toUtf8().constData(), 0, -1);
+        description = translator->translate(0, d_ptr->descriptionTranslationKey.toUtf8().constData(), 0, -1);
     return description.isEmpty() ? d_ptr->fallbackDescription : description;
 }
 
 QString MPermission::descriptionUnlocalized() const
 {
     return d_ptr->fallbackDescription;
+}
+
+QString MPermission::longDescription() const
+{
+    if (d_ptr->translationCatalog.isEmpty() || d_ptr->longDescriptionTranslationKey.isEmpty())
+        return d_ptr->fallbackLongDescription;
+
+    QString description;
+    QTranslator *translator = d_ptr->translator();
+    if (translator)
+        description = translator->translate(0, d_ptr->longDescriptionTranslationKey.toUtf8().constData(), 0, -1);
+    return description.isEmpty() ? d_ptr->fallbackLongDescription : description;
+}
+
+QString MPermission::longDescriptionUnlocalized() const
+{
+    return d_ptr->fallbackLongDescription;
 }

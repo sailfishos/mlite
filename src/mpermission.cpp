@@ -127,7 +127,7 @@ QTranslator *MPermissionPrivate::translator() const
 {
     if (!s_translators.contains(translationCatalog)) {
         QTranslator *translator = new QTranslator;
-        if (translator->load(QLocale(), translationCatalog, TranslationSeparator, TranslationDirectory)) {
+        if (!translator->load(QLocale(), translationCatalog, TranslationSeparator, TranslationDirectory)) {
             qWarning() << "Failed to load translation catalog" << translationCatalog;
             delete translator;
             translator = 0; // Mark as failed

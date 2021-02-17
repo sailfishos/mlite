@@ -1,5 +1,7 @@
 /***************************************************************************
 **
+** Copyright (C) 2021 Open Mobile Platform LLC.
+** Copyright (C) 2016 - 2019 Jolla Ltd.
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (directui@nokia.com)
@@ -28,6 +30,10 @@
 
 #include <unistd.h>
 
+namespace {
+    int RemoteActionTimeout = 120 * 1000; // D-Bus activation timeout
+}
+
 MRemoteActionPrivate::MRemoteActionPrivate()
 {
 }
@@ -51,11 +57,7 @@ void MRemoteActionPrivate::trigger(bool wait)
     QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath, interface, methodName);
     msg.setArguments(arguments);
 
-    if (wait) {
-        QDBusConnection::sessionBus().call(msg);
-    } else {
-        QDBusConnection::sessionBus().asyncCall(msg);
-    }
+    QDBusConnection::sessionBus().call(msg, wait ? QDBus::Block : QDBus::NoBlock, RemoteActionTimeout);
 }
 
 QString MRemoteActionPrivate::toString() const

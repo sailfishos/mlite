@@ -1,6 +1,7 @@
 /***************************************************************************
 **
-** Copyright (C) 2016 Jolla Ltd.
+** Copyright (C) 2021 Open Mobile Platform LLC.
+** Copyright (C) 2016 - 2019 Jolla Ltd.
 **
 ** This file is part of mlite.
 **
@@ -21,6 +22,8 @@
 #include <QDebug>
 
 #include <unistd.h>
+
+int RemoteActionTimeout = 120 * 1000; // D-Bus activation timeout
 
 int main(int argc, char *argv[])
 {
@@ -50,10 +53,10 @@ int main(int argc, char *argv[])
                 action.serviceName(), action.objectPath(), action.interface(), action.methodName());
     message.setArguments(action.arguments());
 
-    QDBusMessage reply = QDBusConnection::sessionBus().call(message);
+    QDBusMessage reply = QDBusConnection::sessionBus().call(message, QDBus::Block, RemoteActionTimeout);
 
     if (reply.type() == QDBusMessage::ErrorMessage) {
-        fprintf(stderr, "%s\n", qPrintable(reply.errorMessage()));
+        fprintf(stderr, "Remote action failed: %s\n", qPrintable(reply.errorMessage()));
 
         return 1;
     }

@@ -91,6 +91,7 @@ public:
      */
     QString longDescriptionUnlocalized() const;
 
+    MPermission &operator=(const MPermission &);
 protected:
     /*! \internal */
     //! Pointer to the private class
@@ -98,7 +99,6 @@ protected:
     /*! \internal_end */
 
 private:
-    MPermission &operator=(const MPermission &);
     Q_DECLARE_PRIVATE(MPermission);
 };
 

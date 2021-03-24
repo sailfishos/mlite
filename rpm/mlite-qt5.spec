@@ -1,6 +1,6 @@
 Name:       mlite-qt5
 Summary:    Useful classes originating from MeeGo Touch
-Version:    0.2.23
+Version:    0.3.6
 Release:    1
 License:    LGPLv2
 URL:        https://git.sailfishos.org/mer-core/mlite

@@ -22,6 +22,7 @@ class MPermissionPrivate
 public:
     MPermissionPrivate(const QString &fileName);
     MPermissionPrivate(const MPermissionPrivate &other);
+    void replace(const MPermissionPrivate *other);
 
     virtual ~MPermissionPrivate();
 

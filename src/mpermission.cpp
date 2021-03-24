@@ -119,6 +119,16 @@ MPermissionPrivate::MPermissionPrivate(const MPermissionPrivate &other) :
 {
 }
 
+void MPermissionPrivate::replace(const MPermissionPrivate *other)
+{
+    fileName = other->fileName;
+    fallbackDescription = other->fallbackDescription;
+    fallbackLongDescription = other->fallbackLongDescription;
+    translationCatalog = other->translationCatalog;
+    descriptionTranslationKey = other->descriptionTranslationKey;
+    longDescriptionTranslationKey = other->longDescriptionTranslationKey;
+}
+
 MPermissionPrivate::~MPermissionPrivate()
 {
 }
@@ -212,4 +222,14 @@ QString MPermission::longDescription() const
 QString MPermission::longDescriptionUnlocalized() const
 {
     return d_ptr->fallbackLongDescription;
+}
+
+MPermission &MPermission::operator=(const MPermission &other)
+{
+    if (&other == this)
+        return *this;
+
+    d_ptr->replace(other.d_ptr);
+
+    return *this;
 }

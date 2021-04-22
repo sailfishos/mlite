@@ -17,9 +17,7 @@
 ****************************************************************************/
 
 // This has to be the first include otherwise gdbusintrospection.h causes an error.
-extern "C" {
 #include <dconf.h>
-};
 
 #include <QCoreApplication>
 #include <QString>

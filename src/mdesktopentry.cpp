@@ -5,7 +5,7 @@
 ** Copyright (C) 2010, 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** Copyright (C) 2011 Intel Corp.
 ** Copyright (C) 2012 - 2016 Jolla Ltd.
-** Copyright (C) 2020 Open Mobile Platform LLC.
+** Copyright (C) 2020 - 2021 Open Mobile Platform LLC.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -51,6 +51,8 @@ const QString LogicalIdKey("X-MeeGo-Logical-Id");
 const QString TranslationCatalogKey("X-MeeGo-Translation-Catalog");
 const QString XMaemoServiceKey("X-Maemo-Service");
 const QString SailjailSection("X-Sailjail");
+const QString SandboxingKey("Sandboxing");
+const QString DisabledValue("Disabled");
 
 
 GKeyFileWrapper::GKeyFileWrapper()
@@ -571,5 +573,5 @@ QString MDesktopEntry::url() const
 
 bool MDesktopEntry::isSandboxed() const
 {
-    return d_ptr->keyFile.hasSection(SailjailSection);
+    return d_ptr->keyFile.hasSection(SailjailSection) && value(SailjailSection, SandboxingKey) != DisabledValue;
 }

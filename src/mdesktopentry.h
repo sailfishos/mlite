@@ -19,6 +19,7 @@
 #define MDESKTOPENTRY_H_
 
 #include <mlite-global.h>
+#include "mdesktopaction.h"
 #include <QMap>
 #include <QIODevice>
 
@@ -254,6 +255,12 @@ public:
      * Returns whether the application is sandboxed.
      */
     bool isSandboxed() const;
+
+
+    /*!
+     * Return desktop actions list
+     */
+    QList<MDesktopAction> actions() const;
 
 protected:
     /*! \internal */

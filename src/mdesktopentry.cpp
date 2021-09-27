@@ -52,6 +52,7 @@ const QString TranslationCatalogKey("X-MeeGo-Translation-Catalog");
 const QString XMaemoServiceKey("X-Maemo-Service");
 const QString SailjailSection("X-Sailjail");
 const QString SandboxingKey("Sandboxing");
+const QString ActionsKey("Actions");
 const QString DisabledValue("Disabled");
 
 
@@ -574,4 +575,15 @@ QString MDesktopEntry::url() const
 bool MDesktopEntry::isSandboxed() const
 {
     return d_ptr->keyFile.hasSection(SailjailSection) && value(SailjailSection, SandboxingKey) != DisabledValue;
+}
+
+QList<MDesktopAction> MDesktopEntry::actions() const
+{
+    QList<MDesktopAction> actionsList;
+    QStringList actions = value(DesktopEntrySection, ActionsKey).split(";", Qt::SkipEmptyParts);
+    for (int i = 0; i < actions.size(); ++i) {
+        actionsList.append(MDesktopAction(d_ptr->sourceFileName, actions.at(i)));
+    }
+
+    return actionsList;
 }

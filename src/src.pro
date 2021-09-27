@@ -46,6 +46,7 @@ QDBUSXML2CPP = $$[QT_INSTALL_BINS]/qdbusxml2cpp
 system($$QDBUSXML2CPP notificationmanager.xml -p mnotificationmanagerproxy -c MNotificationManagerProxy -i metatypedeclarations.h)
 
 SOURCES += mnotificationmanagerproxy.cpp \
+           mdesktopaction.cpp \
            mnotification.cpp \
            mnotificationgroup.cpp \
            mremoteaction.cpp \
@@ -54,6 +55,7 @@ SOURCES += mnotificationmanagerproxy.cpp \
            mfiledatastore.cpp
 
 HEADERS += mnotificationmanagerproxy.h \
+           mdesktopaction_p.h \
            mnotification.h \
            mnotification_p.h \
            mnotificationgroup.h \
@@ -76,10 +78,12 @@ INSTALL_HEADERS += mnotification.h \
                    MNotificationGroup \
                    MRemoteAction \
                    mdesktopentry.h \
+                   mdesktopaction.h \
                    mpermission.h \
                    mlite-global.h \
                    mfiledatastore.h \
                    MDesktopEntry \
+                   MDesktopAction \
                    MPermission
 
 HEADERS *= $$INSTALL_HEADERS

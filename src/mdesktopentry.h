@@ -5,7 +5,7 @@
 ** Copyright (C) 2010, 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** Copyright (C) 2011 Intel Corp.
 ** Copyright (C) 2012, 2013 Jolla Ltd.
-** Copyright (C) 2020 Open Mobile Platform LLC.
+** Copyright (C) 2020 - 2021 Open Mobile Platform LLC.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -254,6 +254,18 @@ public:
      * Returns whether the application is sandboxed.
      */
     bool isSandboxed() const;
+
+    /*!
+     * Returns the localized value of the key or an empty string if it is
+     * not defined in the input desktop entry file.
+     */
+    QString localizedValue(const QString &key) const;
+
+    /*!
+     * Returns the localized value of the group-key stored as "group/key"
+     * key or an empty string if it is not defined in the input desktop entry file.
+     */
+    QString localizedValue(const QString &group, const QString &key) const;
 
 protected:
     /*! \internal */

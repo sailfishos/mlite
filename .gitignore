@@ -3,7 +3,14 @@
 *.so*
 Makefile
 *.pro.user
-.moc
-.obj
+*.moc
+*.list
+ut_*
+moc_*
 mnotificationmanagerproxy.*
-tools/mlitenotificationtool/mlitenotificationtool
+/src/mlite5.pc
+/tests/Makefile.ut_*
+/tests/tests.xml
+/tools/mlitenotificationtool/mlitenotificationtool
+/tools/mliteremoteaction/mliteremoteaction
+/RPMS/

@@ -4,7 +4,8 @@
 **
 ** Copyright (C) 2010, 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** Copyright (C) 2011 Intel Corp.
-** Copyright (C) 2012, 2013 Jolla Ltd.
+** Copyright (C) 2012 - 2014 Jolla Ltd.
+** Copyright (C) 2020 - 2021 Open Mobile Platfrom LLC.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -96,10 +97,19 @@ public:
     mutable QString translatedName;
 
     /*!
-     * Loads a QTranslator from X-MeeGo-Translation-Catalog
+     * Loads QTranslator from X-Amber/MeeGo-Translation-Catalog
      * \return A translator for specified catalog, or null
      */
     QTranslator *loadTranslator() const;
+
+    //! Translator cache, limits how long it can live
+    mutable QScopedPointer<QTimer> translatorCacheTimer;
+
+    //! Cached translator
+    mutable QScopedPointer<QTranslator> cachedTranslator;
+
+    //! Translator is unavailable, don't try to load again
+    mutable bool translatorUnavailable;
 
 protected:
     /*

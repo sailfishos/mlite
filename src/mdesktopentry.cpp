@@ -15,14 +15,14 @@
 **
 ****************************************************************************/
 
-#include <QRegExp>
+#include <QCoreApplication>
+#include <QDebug>
 #include <QFile>
 #include <QStringList>
-#include <QCoreApplication>
-#include <QTranslator>
-#include <QTextStream>
 #include <QTextCodec>
-#include <QDebug>
+#include <QTextStream>
+#include <QTimer>
+#include <QTranslator>
 
 #include "mdesktopentry.h"
 #include "mdesktopentry_p.h"
@@ -47,12 +47,15 @@ const QString CategoriesKey("Categories");
 const QString StartupNotifyKey("StartupNotify");
 const QString StartupWMClassKey("StartupWMClass");
 const QString URLKey("URL");
-const QString LogicalIdKey("X-MeeGo-Logical-Id");
-const QString TranslationCatalogKey("X-MeeGo-Translation-Catalog");
+const QString TranslationIdTemplate("X-Amber-Translation-Id-%1");
+const QString TranslationCatalogKey("X-Amber-Translation-Catalog");
+const QString LegacyTranslationIdKey("X-MeeGo-Logical-Id");
+const QString LegacyTranslationCatalogKey("X-MeeGo-Translation-Catalog");
 const QString XMaemoServiceKey("X-Maemo-Service");
 const QString SailjailSection("X-Sailjail");
 const QString SandboxingKey("Sandboxing");
 const QString DisabledValue("Disabled");
+const int TranslatorLifetime = 100;
 
 
 GKeyFileWrapper::GKeyFileWrapper()
@@ -223,11 +226,12 @@ MDesktopEntryPrivate::MDesktopEntryPrivate(const QString &fileName)
     : sourceFileName(fileName)
     , keyFile()
     , valid(true)
+    , translatorUnavailable(false)
     , q_ptr(NULL)
 {
     QFile file(fileName);
 
-    //Checks if the file exists and opens it in readonly mode
+    // Checks if the file exists and opens it in readonly mode
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
         valid = keyFile.load(file);
 
@@ -246,12 +250,36 @@ MDesktopEntryPrivate::~MDesktopEntryPrivate()
 
 QTranslator *MDesktopEntryPrivate::loadTranslator() const
 {
+    if (translatorUnavailable)
+        return 0;
+
+    if (cachedTranslator)
+        return cachedTranslator.data();
+
     QTranslator *translator = new QTranslator;
-    QString catalog = keyFile.stringValue(DesktopEntrySection, TranslationCatalogKey);
-    if (catalog.isNull() || !translator->load(QLocale(), catalog, "-", "/usr/share/translations")) {
+
+    QString catalog;
+    if (keyFile.contains(DesktopEntrySection, TranslationCatalogKey))
+        catalog = keyFile.stringValue(DesktopEntrySection, TranslationCatalogKey);
+    else if (keyFile.contains(DesktopEntrySection, LegacyTranslationCatalogKey))
+        catalog = keyFile.stringValue(DesktopEntrySection, LegacyTranslationCatalogKey);
+
+    if (catalog.isEmpty() || !translator->load(QLocale(), catalog, "-", "/usr/share/translations")) {
         qDebug() << "Unable to load catalog" << catalog;
         delete translator;
         translator = 0;
+        translatorUnavailable = true;
+    }
+
+    if (translator) {
+        cachedTranslator.reset(translator);
+        translatorCacheTimer.reset(new QTimer);
+        translatorCacheTimer->setSingleShot(true);
+        translatorCacheTimer->setInterval(TranslatorLifetime);
+        QObject::connect(translatorCacheTimer.data(), &QTimer::timeout, [this] {
+            cachedTranslator.reset();
+            translatorCacheTimer.reset();
+        });
     }
     return translator;
 }
@@ -335,7 +363,7 @@ bool MDesktopEntry::contains(const QString &group, const QString &key) const
 QString MDesktopEntry::value(const QString &key) const
 {
     QStringList v = key.split('/');
-    return (v.length() == 2) ? value(v[0], v[1]) : QString();
+    return (v.length() == 2) ? value(v[0], v[1]) : value(DesktopEntrySection, key);
 }
 
 QString MDesktopEntry::value(const QString &group, const QString &key) const
@@ -345,6 +373,41 @@ QString MDesktopEntry::value(const QString &group, const QString &key) const
     }
 
     return d_ptr->keyFile.stringValue(group, key);
+}
+
+QString MDesktopEntry::localizedValue(const QString &key) const
+{
+    QStringList v = key.split('/');
+    return (v.length() == 2) ? localizedValue(v[0], v[1]) : localizedValue(DesktopEntrySection, key);
+}
+
+QString MDesktopEntry::localizedValue(const QString &group, const QString &key) const
+{
+    Q_D(const MDesktopEntry);
+
+    QString value;
+
+    QString logicalIdKey = TranslationIdTemplate.arg(key);
+    if (group == DesktopEntrySection && key == NameKey && contains(DesktopEntrySection, LegacyTranslationIdKey))
+        logicalIdKey = LegacyTranslationIdKey;
+
+    if (contains(group, logicalIdKey)) {
+        QString trKey = d->keyFile.stringValue(group, logicalIdKey);
+        QString translation;
+        QTranslator *translator = d->loadTranslator();
+        if (translator)
+            translation = translator->translate(0, trKey.toLatin1().data(), 0, -1);
+        else
+            translation = qtTrId(trKey.toLatin1().data());
+
+        if (!translation.isEmpty() && translation != trKey)
+            value = translation;
+    }
+
+    if (value.isEmpty())
+        value = d->keyFile.localizedValue(group, key);
+
+    return value;
 }
 
 QStringList MDesktopEntry::stringListValue(const QString &key) const
@@ -420,30 +483,10 @@ QString MDesktopEntry::name() const
 {
     Q_D(const MDesktopEntry);
 
-    if (!d->translatedName.isNull())
+    if (!d->translatedName.isEmpty())
         return d->translatedName;
 
-    QString name;
-
-    if (contains(DesktopEntrySection, LogicalIdKey)) {
-        QString key = value(DesktopEntrySection, LogicalIdKey);
-        QString translation;
-        QScopedPointer<QTranslator> translator(d->loadTranslator());
-        if (translator) {
-            translation = translator->translate(0, key.toLatin1().data(), 0, -1);
-        } else {
-            translation = qtTrId(key.toLatin1().data());
-        }
-
-        if (!translation.isEmpty() && translation != key) {
-            name = translation;
-        }
-    }
-
-    if (name.isEmpty()) {
-        name = d->keyFile.localizedValue(DesktopEntrySection, NameKey);
-    }
-
+    QString name = localizedValue(DesktopEntrySection, NameKey);
     d->translatedName = name;
     return name;
 }

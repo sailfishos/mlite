@@ -19,7 +19,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QStringList>
-#include <QTextCodec>
+#include <QLocale>
 #include <QTextStream>
 #include <QTimer>
 #include <QTranslator>

@@ -11,6 +11,7 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QLocale>
 #include <QTextStream>
 #include <QTranslator>
 
@@ -32,6 +33,7 @@ const auto TranslationSeparator = QStringLiteral("-");
 const auto SailjailSection = QStringLiteral("X-Sailjail");
 const auto SailjailPermissionsKey = QStringLiteral("Permissions");
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 10, 0))
 QPair<QStringRef, QStringRef> getField(const QString &line)
 {
     QStringRef remaining = line.midRef(0).trimmed();
@@ -51,6 +53,27 @@ QPair<QStringRef, QStringRef> getField(const QString &line)
     QStringRef value = remaining.mid(separator+1).trimmed();
     return QPair<QStringRef, QStringRef>(key, value);
 }
+#else
+QPair<QStringView, QStringView> getField(const QString &line)
+{
+    QStringView remaining = line.mid(0).trimmed();
+    if (!remaining.startsWith('#'))
+        return QPair<QStringView, QStringView>();
+
+    remaining = remaining.mid(1).trimmed();
+    if (!remaining.startsWith(Prefix))
+        return QPair<QStringView, QStringView>();
+
+    remaining = remaining.mid(Prefix.length());
+    int separator = remaining.indexOf('=');
+    if (separator == -1)
+        return QPair<QStringView, QStringView>();
+
+    QStringView key = remaining.left(separator).trimmed();
+    QStringView value = remaining.mid(separator+1).trimmed();
+    return QPair<QStringView, QStringView>(key, value);
+}
+#endif
 } // namespace
 
 QHash<QString, QTranslator *> MPermissionPrivate::s_translators;
@@ -82,7 +105,11 @@ MPermissionPrivate::MPermissionPrivate(const QString &fileName) :
     };
     while (!stream.atEnd() && missing()) {
         QString line = stream.readLine();
+#if (QT_VERSION < QT_VERSION_CHECK(5, 14, 0))
         QPair<QStringRef, QStringRef> field = getField(line);
+#else
+        QPair<QStringView, QStringView> field = getField(line);
+#endif
         if (field.first.isEmpty()) {
             continue;
         } else if (field.first == Description) {

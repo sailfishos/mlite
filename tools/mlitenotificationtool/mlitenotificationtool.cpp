@@ -27,7 +27,6 @@
 #include <MNotificationGroup>
 #include <QString>
 #include <QStringList>
-#include <QRegExp>
 #include <QDateTime>
 
 // Subclasses to gain access to the IDs
@@ -259,7 +258,7 @@ int main(int argc, char *argv[])
                              toolNotification->image().toUtf8().constData() << "\t" <<
                              toolNotification->count() << "\t" <<
                              toolNotification->identifier().toUtf8().constData() << "\t" <<
-                             toolNotification->timestamp().toTime_t() << "\t" << std::endl;
+                             toolNotification->timestamp().toMSecsSinceEpoch() / 1000 << "\t" << std::endl;
                 delete notification;
             }
         }
@@ -292,7 +291,7 @@ int main(int argc, char *argv[])
             QList<QVariant> arguments;
 
             for (int i = optind + 8; i < argc; ++i) {
-                arguments.append(QVariant(argv[i]));
+                arguments.append(QVariant(QString(argv[i])));
             }
             remoteAction = new MRemoteAction(serviceName, objectPath, interface, methodName, arguments);
         } else {
@@ -318,7 +317,7 @@ int main(int argc, char *argv[])
                     notification.setCount(count);
                     notification.setIdentifier(identifier);
                     if (timestamp != 0) {
-                        notification.setTimestamp(QDateTime::fromTime_t(timestamp));
+                        notification.setTimestamp(QDateTime::fromSecsSinceEpoch(timestamp));
                     }
                     notification.publish();
                     result = notification.id();
@@ -329,7 +328,7 @@ int main(int argc, char *argv[])
                     notification.setCount(count);
                     notification.setIdentifier(identifier);
                     if (timestamp != 0) {
-                        notification.setTimestamp(QDateTime::fromTime_t(timestamp));
+                        notification.setTimestamp(QDateTime::fromSecsSinceEpoch(timestamp));
                     }
                     notification.publish();
                     result = notification.id();
@@ -357,7 +356,7 @@ int main(int argc, char *argv[])
                 notification.setCount(count);
                 notification.setIdentifier(identifier);
                 if (timestamp != 0) {
-                    notification.setTimestamp(QDateTime::fromTime_t(timestamp));
+                    notification.setTimestamp(QDateTime::fromSecsSinceEpoch(timestamp));
                 }
                 notification.publish();
             }

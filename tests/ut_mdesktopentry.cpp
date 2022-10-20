@@ -6,6 +6,22 @@
 
 #include "mdesktopentry.h"
 
+#include <QtGlobal>
+#include <QString>
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define QRegularExpression QRegExp
+#endif
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+namespace Qt
+{
+using SplitBehavior = QString::SplitBehavior;
+const SplitBehavior SkipEmptyParts = SplitBehavior::SkipEmptyParts;
+const auto endl = ::endl;
+}
+#endif
+
 namespace Tests {
 
 class UtMDesktopEntry : public QObject
@@ -284,9 +300,9 @@ void UtMDesktopEntry::values()
     } else if (key == "Hidden") {
         QCOMPARE(entry.hidden() ? QString("true") : QString("false"), expected);
     } else if (key == "OnlyShowIn") {
-        QCOMPARE(entry.onlyShowIn(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
+        QCOMPARE(entry.onlyShowIn(), expected.split(QRegularExpression("\\s*;\\s*"), Qt::SkipEmptyParts));
     } else if (key == "NotShowIn") {
-        QCOMPARE(entry.notShowIn(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
+        QCOMPARE(entry.notShowIn(), expected.split(QRegularExpression("\\s*;\\s*"), Qt::SkipEmptyParts));
     } else if (key == "TryExec") {
         QCOMPARE(entry.tryExec(), expected);
     } else if (key == "Exec") {
@@ -296,9 +312,9 @@ void UtMDesktopEntry::values()
     } else if (key == "Terminal") {
         QCOMPARE(entry.terminal() ? QString("true") : QString("false"), expected);
     } else if (key == "MimeType") {
-        QCOMPARE(entry.mimeType(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
+        QCOMPARE(entry.mimeType(), expected.split(QRegularExpression("\\s*;\\s*"), Qt::SkipEmptyParts));
     } else if (key == "Categories") {
-        QCOMPARE(entry.categories(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
+        QCOMPARE(entry.categories(), expected.split(QRegularExpression("\\s*;\\s*"), Qt::SkipEmptyParts));
     } else if (key == "StartupNotify") {
         QCOMPARE(entry.startupNotify() ? QString("true") : QString("false"), expected);
     } else if (key == "StartupWMClass") {
@@ -465,21 +481,21 @@ QString UtMDesktopEntry::createDesktopEntry(const Values &values)
     QTextStream out(m_temporaryFile);
 
     if (values.contains("__head__")) {
-        out << values.value("__head__") << endl;
+        out << values.value("__head__") << Qt::endl;
     } else {
-        out << "[Desktop Entry]" << endl;
+        out << "[Desktop Entry]" << Qt::endl;
     }
 
     QMapIterator<QString, QString> it(values);
     while (it.hasNext()) {
         it.next();
         if (!it.key().startsWith("__")) {
-            out << it.key() << '=' << it.value() << endl;
+            out << it.key() << '=' << it.value() << Qt::endl;
         }
     }
 
     if (values.contains("__tail__")) {
-        out << values.value("__tail__") << endl;
+        out << values.value("__tail__") << Qt::endl;
     }
 
     return m_temporaryFile->fileName();

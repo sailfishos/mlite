@@ -6,6 +6,12 @@
 
 #include "mdesktopentry.h"
 
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#define ENDL endl
+#else
+#define ENDL Qt::endl
+#endif
+
 namespace Tests {
 
 class UtMDesktopEntry : public QObject
@@ -284,9 +290,13 @@ void UtMDesktopEntry::values()
     } else if (key == "Hidden") {
         QCOMPARE(entry.hidden() ? QString("true") : QString("false"), expected);
     } else if (key == "OnlyShowIn") {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         QCOMPARE(entry.onlyShowIn(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
+#endif
     } else if (key == "NotShowIn") {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         QCOMPARE(entry.notShowIn(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
+#endif
     } else if (key == "TryExec") {
         QCOMPARE(entry.tryExec(), expected);
     } else if (key == "Exec") {
@@ -296,9 +306,13 @@ void UtMDesktopEntry::values()
     } else if (key == "Terminal") {
         QCOMPARE(entry.terminal() ? QString("true") : QString("false"), expected);
     } else if (key == "MimeType") {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         QCOMPARE(entry.mimeType(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
+#endif
     } else if (key == "Categories") {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         QCOMPARE(entry.categories(), expected.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts));
+#endif
     } else if (key == "StartupNotify") {
         QCOMPARE(entry.startupNotify() ? QString("true") : QString("false"), expected);
     } else if (key == "StartupWMClass") {
@@ -465,21 +479,21 @@ QString UtMDesktopEntry::createDesktopEntry(const Values &values)
     QTextStream out(m_temporaryFile);
 
     if (values.contains("__head__")) {
-        out << values.value("__head__") << endl;
+        out << values.value("__head__") << ENDL;
     } else {
-        out << "[Desktop Entry]" << endl;
+        out << "[Desktop Entry]" << ENDL;
     }
 
     QMapIterator<QString, QString> it(values);
     while (it.hasNext()) {
         it.next();
         if (!it.key().startsWith("__")) {
-            out << it.key() << '=' << it.value() << endl;
+            out << it.key() << '=' << it.value() << ENDL;
         }
     }
 
     if (values.contains("__tail__")) {
-        out << values.value("__tail__") << endl;
+        out << values.value("__tail__") << ENDL;
     }
 
     return m_temporaryFile->fileName();

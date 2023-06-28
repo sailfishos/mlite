@@ -86,9 +86,10 @@ QString MRemoteActionPrivate::toString() const
     return s;
 }
 
-MRemoteAction::MRemoteAction(const QString &serviceName, const QString &objectPath, const QString &interface, const QString &methodName, const QList<QVariant> &arguments, QObject *parent) :
-    QObject(parent),
-    d_ptr(new MRemoteActionPrivate)
+MRemoteAction::MRemoteAction(const QString &serviceName, const QString &objectPath, const QString &interface,
+                             const QString &methodName, const QList<QVariant> &arguments, QObject *parent)
+    : QObject(parent)
+    , d_ptr(new MRemoteActionPrivate)
 {
     Q_D(MRemoteAction);
 
@@ -99,9 +100,9 @@ MRemoteAction::MRemoteAction(const QString &serviceName, const QString &objectPa
     d->arguments = arguments;
 }
 
-MRemoteAction::MRemoteAction(const QString &string, QObject *parent) :
-    QObject(parent),
-    d_ptr(new MRemoteActionPrivate)
+MRemoteAction::MRemoteAction(const QString &string, QObject *parent)
+    : QObject(parent)
+    , d_ptr(new MRemoteActionPrivate)
 {
     fromString(string);
 }
@@ -144,9 +145,9 @@ void MRemoteAction::fromString(const QString &string)
     }
 }
 
-MRemoteAction::MRemoteAction(const MRemoteAction &action) :
-    QObject(action.parent()),
-    d_ptr(new MRemoteActionPrivate)
+MRemoteAction::MRemoteAction(const MRemoteAction &action)
+    : QObject(action.parent())
+    , d_ptr(new MRemoteActionPrivate)
 {
     fromString(action.toString());
 }
@@ -188,6 +189,30 @@ QVariantList MRemoteAction::arguments() const
 {
     Q_D(const MRemoteAction);
     return d->arguments;
+}
+
+void MRemoteAction::setServiceName(const QString &service)
+{
+    Q_D(MRemoteAction);
+    d->serviceName = service;
+}
+
+void MRemoteAction::setObjectPath(const QString &path)
+{
+    Q_D(MRemoteAction);
+    d->objectPath = path;
+}
+
+void MRemoteAction::setInterface(const QString &interface)
+{
+    Q_D(MRemoteAction);
+    d->interface = interface;
+}
+
+void MRemoteAction::setArguments(const QVariantList &arguments)
+{
+    Q_D(MRemoteAction);
+    d->arguments = arguments;
 }
 
 void MRemoteAction::trigger()

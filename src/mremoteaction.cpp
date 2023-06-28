@@ -49,7 +49,7 @@ void MRemoteActionPrivate::trigger(bool wait)
     const int euid = geteuid();
     const int egid = getegid();
 
-    if (uid != euid || gid != egid) {
+    if (!keepPrivileges && (uid != euid || gid != egid)) {
         QProcess::startDetached(QStringLiteral("/usr/libexec/mliteremoteaction"), { toString() });
         return;
     }
@@ -147,9 +147,8 @@ void MRemoteAction::fromString(const QString &string)
 
 MRemoteAction::MRemoteAction(const MRemoteAction &action)
     : QObject(action.parent())
-    , d_ptr(new MRemoteActionPrivate)
+    , d_ptr(new MRemoteActionPrivate(*action.d_ptr))
 {
-    fromString(action.toString());
 }
 
 bool MRemoteAction::isValid() const
@@ -213,6 +212,18 @@ void MRemoteAction::setArguments(const QVariantList &arguments)
 {
     Q_D(MRemoteAction);
     d->arguments = arguments;
+}
+
+bool MRemoteAction::keepPrivileges() const
+{
+    Q_D(const MRemoteAction);
+    return d->keepPrivileges;
+}
+
+void MRemoteAction::setKeepPrivileges(bool keep)
+{
+    Q_D(MRemoteAction);
+    d->keepPrivileges = keep;
 }
 
 void MRemoteAction::trigger()

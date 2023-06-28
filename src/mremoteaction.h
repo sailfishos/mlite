@@ -135,6 +135,16 @@ public:
      */
     void setArguments(const QVariantList &arguments);
 
+    /*!
+     * \brief Returns whether D-Bus method is called without dropping extra privileges
+     */
+    bool keepPrivileges() const;
+
+    /*!
+     * \brief Sets whether D-Bus method is called without dropping extra privileges
+     */
+    void setKeepPrivileges(bool keep);
+
 public Q_SLOTS:
     /*!
      * \brief A slot for calling the D-Bus function when the action is triggered

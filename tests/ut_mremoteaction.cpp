@@ -25,6 +25,7 @@ private slots:
     void initTestCase();
     void serialization();
     void trigger();
+    void copy();
 };
 
 class UtMRemoteAction::ServiceMock : public DBusClientTestBase::MockBase
@@ -100,6 +101,19 @@ void UtMRemoteAction::trigger()
     QCOMPARE(spy[0][0].toInt(), 123);
     QCOMPARE(spy[0][1].toString(), QString("abc"));
     QCOMPARE(spy[0][2].toStringList(), QStringList() << "a" << "b" << "c");
+}
+
+void UtMRemoteAction::copy()
+{
+    MRemoteAction action(SERVICE_NAME, OBJECT_PATH, INTERFACE, "Baz",
+            QList<QVariant>()
+            << 123
+            << "abc"
+            << (QStringList() << "a" << "b" << "c"));
+    QVERIFY(!action.keepPrivileges()); // no privileges by default
+    QVERIFY(!MRemoteAction(action).keepPrivileges()); // neither on a copy
+    action.setKeepPrivileges(true);
+    QVERIFY(MRemoteAction(action).keepPrivileges()); // also this gets copied
 }
 
 TEST_MAIN_WITH_MOCK(UtMRemoteAction, UtMRemoteAction::ServiceMock)

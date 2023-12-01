@@ -47,7 +47,9 @@ public:
      * \param arguments the arguments of the D-Bus call. Defaults to no arguments.
      * \param parent Parent object
      */
-    explicit MRemoteAction(const QString &serviceName, const QString &objectPath, const QString &interface, const QString &methodName, const QList<QVariant> &arguments = QList<QVariant>(), QObject *parent = NULL);
+    explicit MRemoteAction(const QString &serviceName, const QString &objectPath, const QString &interface,
+                           const QString &methodName, const QList<QVariant> &arguments = QList<QVariant>(),
+                           QObject *parent = NULL);
 
     /*!
      * \brief Constructs a MRemoteAction from a string representation of a D-Bus remote action acquired with toString().
@@ -112,6 +114,36 @@ public:
      * \return a list of arguments.
      */
     QVariantList arguments() const;
+
+    /*!
+     * \brief Sets the service name of the D-Bus method to call.
+     */
+    void setServiceName(const QString &service);
+
+    /*!
+     * \brief Sets the object path of the D-Bus method to call.
+     */
+    void setObjectPath(const QString &path);
+
+    /*!
+     * \brief Sets the interface of the D-Bus method to call.
+     */
+    void setInterface(const QString &interface);
+
+    /*!
+     * \brief Sets the arguments of the D-Bus method to call.
+     */
+    void setArguments(const QVariantList &arguments);
+
+    /*!
+     * \brief Returns whether D-Bus method is called without dropping extra privileges
+     */
+    bool keepPrivileges() const;
+
+    /*!
+     * \brief Sets whether D-Bus method is called without dropping extra privileges
+     */
+    void setKeepPrivileges(bool keep);
 
 public Q_SLOTS:
     /*!

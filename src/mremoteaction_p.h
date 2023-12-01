@@ -26,12 +26,8 @@
 #include <QVariant>
 #include <QVector>
 
-class MRemoteAction;
-
 class MRemoteActionPrivate
 {
-    Q_DECLARE_PUBLIC(MRemoteAction)
-
 public:
     MRemoteActionPrivate();
     virtual ~MRemoteActionPrivate();
@@ -49,9 +45,7 @@ public:
     QString methodName;
     //! The arguments of the D-Bus call
     QList<QVariant> arguments;
-
-protected:
-    MRemoteAction *q_ptr;
+    bool keepPrivileges = false;
 };
 
 #endif

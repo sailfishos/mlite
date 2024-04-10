@@ -101,11 +101,11 @@ MPermissionPrivate::MPermissionPrivate(const QString &fileName) :
     if (description.isEmpty()) {
         qWarning() << "Permission file" << file.fileName() << "is missing a required field.";
     } else {
-        fallbackDescription = description;
-        fallbackLongDescription = descriptionLong;
-        descriptionTranslationKey = key;
-        longDescriptionTranslationKey = keyLong;
-        translationCatalog = catalog;
+        fallbackDescription = std::move(description);
+        fallbackLongDescription = std::move(descriptionLong);
+        descriptionTranslationKey = std::move(key);
+        longDescriptionTranslationKey = std::move(keyLong);
+        translationCatalog = std::move(catalog);
     }
 }
 

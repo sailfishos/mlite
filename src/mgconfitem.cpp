@@ -105,7 +105,7 @@ void MGConfItem::update_value(bool emit_signal)
                 && priv->value.type() == QVariant::Double
                 // The "!=" equality check may fail for doubles depending on precision, check again
                 && !qFuzzyCompare(new_value.toDouble(), priv->value.toDouble()))) {
-        priv->value = new_value;
+        priv->value = std::move(new_value);
         if (emit_signal)
             emit valueChanged();
     }

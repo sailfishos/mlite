@@ -401,7 +401,7 @@ QString MDesktopEntry::localizedValue(const QString &group, const QString &key) 
             translation = qtTrId(trKey.toLatin1().data());
 
         if (!translation.isEmpty() && translation != trKey)
-            value = translation;
+            value = std::move(translation);
     }
 
     if (value.isEmpty())

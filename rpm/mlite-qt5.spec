@@ -49,7 +49,7 @@ Test suite for mlite-qt5.
 %build
 export QT_SELECT=5
 %qmake5 VERSION=%{version}
-make %{?_smp_mflags}
+%make_build
 
 %install
 rm -rf %{buildroot}

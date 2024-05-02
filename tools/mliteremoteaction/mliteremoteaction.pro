@@ -9,7 +9,7 @@ INCLUDEPATH += $$PWD/../../src
 DEPENDPATH += $$PWD/../../src
 
 QMAKE_LIBDIR = $$OUT_PWD/../../src
-LIBS = -lmlite5
+LIBS = -lmlite$${QT_MAJOR_VERSION}
 
 SOURCES += main.cpp
 

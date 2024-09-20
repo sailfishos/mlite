@@ -18,8 +18,9 @@ QT     = core dbus
 TARGET = $$qtLibraryTarget(mlite$${NODASH_QT_VERSION})
 TEMPLATE = lib
 
-CONFIG += link_pkgconfig c++11
+CONFIG += link_pkgconfig
 PKGCONFIG += glib-2.0
+
 packagesExist(dconf) {
     PKGCONFIG += dconf
     DEFINES += HAVE_DCONF

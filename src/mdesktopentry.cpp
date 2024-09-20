@@ -329,13 +329,13 @@ QStringList MDesktopEntryPrivate::stringListValue(const QString &section, const 
     return keyFile.stringList(section, key);
 }
 
-MDesktopEntry::MDesktopEntry(const QString &fileName) :
-    d_ptr(new MDesktopEntryPrivate(fileName))
+MDesktopEntry::MDesktopEntry(const QString &fileName)
+    : d_ptr(new MDesktopEntryPrivate(fileName))
 {
 }
 
-MDesktopEntry::MDesktopEntry(MDesktopEntryPrivate &dd) :
-    d_ptr(&dd)
+MDesktopEntry::MDesktopEntry(MDesktopEntryPrivate &dd)
+    : d_ptr(&dd)
 {
 }
 

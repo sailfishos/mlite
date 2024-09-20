@@ -30,7 +30,8 @@
 
 #include "mdconf_p.h"
 
-struct MGConfItemPrivate : public QObject {
+struct MGConfItemPrivate : public QObject
+{
     MGConfItemPrivate(QString aKey, MGConfItem* aParent);
     ~MGConfItemPrivate();
 
@@ -45,11 +46,12 @@ struct MGConfItemPrivate : public QObject {
     QByteArray dconf_key;
 };
 
-MGConfItemPrivate::MGConfItemPrivate(QString aKey, MGConfItem* aParent) : QObject(aParent),
-    key(aKey),
-    client(dconf_client_new()),
-    handler(g_signal_connect(client, "changed", G_CALLBACK(changed), this)),
-    dconf_key(convertKey(aKey))
+MGConfItemPrivate::MGConfItemPrivate(QString aKey, MGConfItem* aParent)
+    : QObject(aParent)
+    , key(aKey)
+    , client(dconf_client_new())
+    , handler(g_signal_connect(client, "changed", G_CALLBACK(changed), this))
+    , dconf_key(convertKey(aKey))
 {
     dconf_client_watch_fast(client, dconf_key);
 }
@@ -199,8 +201,9 @@ bool MGConfItem::sync()
     return true;
 }
 
-MGConfItem::MGConfItem(const QString &key, QObject *parent) : QObject(parent),
-    priv(new MGConfItemPrivate(key, this))
+MGConfItem::MGConfItem(const QString &key, QObject *parent)
+    : QObject(parent)
+    , priv(new MGConfItemPrivate(key, this))
 {
     update_value(false);
 }

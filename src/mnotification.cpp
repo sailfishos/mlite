@@ -56,15 +56,17 @@ MNotificationManagerProxy *notificationManager()
     if (notificationManagerProxy.isNull()) {
         qDBusRegisterMetaType<MNotification>();
         qDBusRegisterMetaType<QList<MNotification> >();
-        notificationManagerProxy.reset(new MNotificationManagerProxy("org.freedesktop.Notifications", "/org/freedesktop/Notifications", QDBusConnection::sessionBus()));
+        notificationManagerProxy.reset(new MNotificationManagerProxy("org.freedesktop.Notifications",
+                                                                     "/org/freedesktop/Notifications",
+                                                                     QDBusConnection::sessionBus()));
     }
     return notificationManagerProxy.data();
 }
 
-MNotificationPrivate::MNotificationPrivate() :
-    id(0),
-    groupId(0),
-    count(0)
+MNotificationPrivate::MNotificationPrivate()
+    : id(0)
+    , groupId(0)
+    , count(0)
 {
 }
 
@@ -109,18 +111,18 @@ void MNotificationPrivate::publishGroup()
     }
 }
 
-MNotification::MNotification(MNotificationPrivate &dd) :
-    d_ptr(&dd)
+MNotification::MNotification(MNotificationPrivate &dd)
+    : d_ptr(&dd)
 {
 }
 
-MNotification::MNotification() :
-    d_ptr(new MNotificationPrivate)
+MNotification::MNotification()
+    : d_ptr(new MNotificationPrivate)
 {
 }
 
-MNotification::MNotification(const QString &eventType, const QString &summary, const QString &body) :
-    d_ptr(new MNotificationPrivate)
+MNotification::MNotification(const QString &eventType, const QString &summary, const QString &body)
+    : d_ptr(new MNotificationPrivate)
 {
     Q_D(MNotification);
     d->eventType = eventType;
@@ -128,14 +130,14 @@ MNotification::MNotification(const QString &eventType, const QString &summary, c
     d->body = body;
 }
 
-MNotification::MNotification(const MNotification &notification) :
-    QObject(), d_ptr(new MNotificationPrivate)
+MNotification::MNotification(const MNotification &notification)
+    : QObject(), d_ptr(new MNotificationPrivate)
 {
     *this = notification;
 }
 
-MNotification::MNotification(uint id) :
-    d_ptr(new MNotificationPrivate)
+MNotification::MNotification(uint id)
+    : d_ptr(new MNotificationPrivate)
 {
     Q_D(MNotification);
     d->id = id;
@@ -278,7 +280,8 @@ bool MNotification::publish()
         }
     }
 
-    d->id = notificationManager()->Notify(QFileInfo(QCoreApplication::arguments()[0]).fileName(), d->id, d->image, summary, body, QStringList(), hints, -1);
+    d->id = notificationManager()->Notify(QFileInfo(QCoreApplication::arguments()[0]).fileName(),
+                                          d->id, d->image, summary, body, QStringList(), hints, -1);
 
     if (d->id != 0) {
         d->publishedTimestamp = d->userSetTimestamp;
@@ -319,7 +322,7 @@ QList<MNotification *> MNotification::notifications()
     QList<MNotification *> notificationList;
     if (notificationManager()->GetCapabilities().value().contains("x-nemo-get-notifications")) {
         QList<MNotification> list = notificationManager()->GetNotifications(QFileInfo(QCoreApplication::arguments()[0]).fileName());
-        foreach(const MNotification &notification, list) {
+        foreach (const MNotification &notification, list) {
             if (notification.property("legacyType").toString() == "MNotification") {
                 notificationList.append(new MNotification(notification));
             }

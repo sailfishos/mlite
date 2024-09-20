@@ -63,7 +63,8 @@ public:
      * \param summary the summary text to be used in the notification. Can be omitted (defaults to no summary text).
      * \param body the body text to be used in the notification. Can be omitted (defaults to no body text).
      */
-    explicit MNotificationGroup(const QString &eventType, const QString &summary = QString(), const QString &body = QString());
+    explicit MNotificationGroup(const QString &eventType, const QString &summary = QString(),
+                                const QString &body = QString());
 
     /*!
      * Destroys the class that represents a notification group.

@@ -54,7 +54,7 @@ static bool copySettings(const QSettings &originalSettings,
                          QSettings &newSettings)
 {
     QStringList keys = originalSettings.allKeys();
-    foreach(const QString & key, originalSettings.allKeys()) {
+    foreach (const QString & key, originalSettings.allKeys()) {
         newSettings.setValue(key, originalSettings.value(key));
         if (newSettings.status() != QSettings::NoError) {
             return false;
@@ -138,15 +138,15 @@ static bool doSync(QSettings &originalSettings, QScopedPointer<QFileSystemWatche
     return returnValue;
 }
 
-MFileDataStorePrivate::MFileDataStorePrivate(const QString &filePath) :
-    settings(filePath, QSettings::IniFormat),
-    watcher(new QFileSystemWatcher())
+MFileDataStorePrivate::MFileDataStorePrivate(const QString &filePath)
+    : settings(filePath, QSettings::IniFormat)
+    , watcher(new QFileSystemWatcher())
 {
     settings.sync();
 }
 
-MFileDataStore::MFileDataStore(const QString &filePath) :
-    d_ptr(new MFileDataStorePrivate(filePath))
+MFileDataStore::MFileDataStore(const QString &filePath)
+    : d_ptr(new MFileDataStorePrivate(filePath))
 {
     Q_D(MFileDataStore);
     takeSnapshot();
@@ -288,7 +288,7 @@ void MFileDataStore::takeSnapshot()
 {
     Q_D(MFileDataStore);
     d->settingsSnapshot.clear();
-    foreach(const QString & key, d->settings.allKeys()) {
+    foreach (const QString & key, d->settings.allKeys()) {
         d->settingsSnapshot.insert(key, d->settings.value(key));
     }
 }
@@ -303,7 +303,7 @@ void MFileDataStore::fileChanged(const QString &fileName)
     if (d->settings.fileName() == fileName && isWritable()) {
         // Check whether the values for existing keys have changed or
         // if keys have been deleted
-        foreach(const QString & key, d->settingsSnapshot.keys()) {
+        foreach (const QString & key, d->settingsSnapshot.keys()) {
             if ((d->settings.contains(key)
                     && d->settings.value(key) != d->settingsSnapshot.value(key))
                     || (!d->settings.contains(key))) {
@@ -311,7 +311,7 @@ void MFileDataStore::fileChanged(const QString &fileName)
             }
         }
         // Check whether new keys have been added
-        foreach(const QString & key, d->settings.allKeys()) {
+        foreach (const QString & key, d->settings.allKeys()) {
             if (!d->settingsSnapshot.contains(key)) {
                 emit valueChanged(key, d->settings.value(key));
             }

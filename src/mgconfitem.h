@@ -27,7 +27,7 @@
 
 /*!
 
-  \brief MGConfItem is a simple C++ wrapper for dcconf.
+  \brief MGConfItem is a simple C++ wrapper for dconf.
 
   Creating a MGConfItem instance gives you access to a single dconf
   key.  You can get and set its value, and connect to its

@@ -21,17 +21,18 @@
 #include "mnotificationgroup.h"
 #include "mnotificationgroup_p.h"
 
-MNotificationGroupPrivate::MNotificationGroupPrivate() : MNotificationPrivate()
+MNotificationGroupPrivate::MNotificationGroupPrivate()
+    : MNotificationPrivate()
 {
 }
 
-MNotificationGroup::MNotificationGroup() :
-    MNotification(*new MNotificationGroupPrivate)
+MNotificationGroup::MNotificationGroup()
+    : MNotification(*new MNotificationGroupPrivate)
 {
 }
 
-MNotificationGroup::MNotificationGroup(const QString &eventType, const QString &summary, const QString &body) :
-    MNotification(*new MNotificationGroupPrivate)
+MNotificationGroup::MNotificationGroup(const QString &eventType, const QString &summary, const QString &body)
+    : MNotification(*new MNotificationGroupPrivate)
 {
     Q_D(MNotificationGroup);
     d->eventType = eventType;
@@ -39,8 +40,8 @@ MNotificationGroup::MNotificationGroup(const QString &eventType, const QString &
     d->body = body;
 }
 
-MNotificationGroup::MNotificationGroup(const MNotificationGroup &group) :
-    MNotification(*new MNotificationGroupPrivate)
+MNotificationGroup::MNotificationGroup(const MNotificationGroup &group)
+    : MNotification(*new MNotificationGroupPrivate)
 {
     *this = group;
 }
@@ -80,7 +81,7 @@ uint MNotificationGroup::notificationCount()
     int count = 0;
     if (notificationManager()->GetCapabilities().value().contains("x-nemo-get-notifications")) {
         QList<MNotification> list = notificationManager()->GetNotifications(QFileInfo(QCoreApplication::arguments()[0]).fileName());
-        foreach(const MNotification &notification, list) {
+        foreach (const MNotification &notification, list) {
             if (notification.property("legacyType").toString() == "MNotification" && notification.groupId() == id()) {
                 count++;
             }
@@ -96,7 +97,7 @@ QList<MNotificationGroup *> MNotificationGroup::notificationGroups()
     QList<MNotificationGroup *> notificationGroupList;
     if (notificationManager()->GetCapabilities().value().contains("x-nemo-get-notifications")) {
         QList<MNotification> list = notificationManager()->GetNotifications(QFileInfo(QCoreApplication::arguments()[0]).fileName());
-        foreach(const MNotification &notification, list) {
+        foreach (const MNotification &notification, list) {
             if (notification.property("legacyType").toString() == "MNotificationGroup") {
                 notificationGroupList.append(new MNotificationGroup(static_cast<const MNotificationGroup &>(notification)));
             }

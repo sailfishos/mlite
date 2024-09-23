@@ -203,12 +203,16 @@ bool MDConf::convertValue(const QVariant &variant, GVariant **valp)
         return true;
     case QMetaType::QStringList: {
         QList<QByteArray> utf8List;
-        QVector<const char *> pointers;
-        foreach (const QString &string, variant.toStringList()) {
+        for (const QString &string : variant.toStringList()) {
             const QByteArray utf8 = string.toUtf8();
             utf8List.append(utf8);
-            pointers.append(utf8.constData());
         }
+
+        QVector<const char *> pointers;
+        for (const QByteArray &item : utf8List) {
+            pointers.append(item.constData());
+        }
+
         *valp = g_variant_new_strv(pointers.data(), pointers.count());
         return true;
     }

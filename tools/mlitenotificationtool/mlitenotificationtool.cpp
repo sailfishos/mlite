@@ -49,7 +49,9 @@ public:
     void setEventType(const QString &eventType);
 };
 
-MNotificationToolNotification::MNotificationToolNotification(const QString &eventType, const QString &summary, const QString &body) : MNotification(eventType, summary, body)
+MNotificationToolNotification::MNotificationToolNotification(const QString &eventType, const QString &summary,
+                                                             const QString &body)
+    : MNotification(eventType, summary, body)
 {
 }
 
@@ -67,7 +69,10 @@ void MNotificationToolNotification::setEventType(const QString &eventType)
     MNotification::setEventType(eventType);
 }
 
-MNotificationToolNotificationGroup::MNotificationToolNotificationGroup(const QString &eventType, const QString &summary, const QString &body) : MNotificationGroup(eventType, summary, body)
+MNotificationToolNotificationGroup::MNotificationToolNotificationGroup(const QString &eventType,
+                                                                       const QString &summary,
+                                                                       const QString &body)
+    : MNotificationGroup(eventType, summary, body)
 {
 }
 
@@ -245,7 +250,7 @@ int main(int argc, char *argv[])
         if (list.size() > 0) {
             std::cout << itemNameCapital << ":" << std::endl;
             std::cout << "Id\tType\tSummary\tBody\tImage\tCount\tIdentifier\tTimestamp" << std::endl;
-            foreach(MNotification *notification, list) {
+            foreach (MNotification *notification, list) {
                 MNotificationToolNotification *toolNotification = static_cast<MNotificationToolNotification *>(notification);
                 std::cout << toolNotification->id() << "\t" <<
                              toolNotification->eventType().toUtf8().constData() << "\t" <<

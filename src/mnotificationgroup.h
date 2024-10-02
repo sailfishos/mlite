@@ -97,6 +97,8 @@ public:
      * \param group the notification representation to a create copy of
      */
     explicit MNotificationGroup(const MNotificationGroup &group);
+
+    MNotificationGroup& operator=(const MNotificationGroup&) = default;
     //! \internal_end
 
     /*!

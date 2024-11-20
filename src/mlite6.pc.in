@@ -1,0 +1,11 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/mlite6
+
+Name: mlite
+Description: Selected classes pulled from the MeeGo Touch Framework
+Version: @VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -lmlite6
+Requires: Qt6DBus

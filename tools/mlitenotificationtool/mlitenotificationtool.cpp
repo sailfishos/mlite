@@ -27,7 +27,6 @@
 #include <MNotificationGroup>
 #include <QString>
 #include <QStringList>
-#include <QRegExp>
 #include <QDateTime>
 
 // Subclasses to gain access to the IDs
@@ -259,7 +258,11 @@ int main(int argc, char *argv[])
                              toolNotification->image().toUtf8().constData() << "\t" <<
                              toolNotification->count() << "\t" <<
                              toolNotification->identifier().toUtf8().constData() << "\t" <<
-                             toolNotification->timestamp().toTime_t() << "\t" << std::endl;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+                             toolNotification->timestamp().toMSecsSinceEpoch() / 1000 << "\t" << std::endl;
+#else
+                             toolNotification->timestamp().toTime_t() / 1000 << "\t" << std::endl;
+#endif
                 delete notification;
             }
         }
@@ -292,7 +295,7 @@ int main(int argc, char *argv[])
             QList<QVariant> arguments;
 
             for (int i = optind + 8; i < argc; ++i) {
-                arguments.append(QVariant(argv[i]));
+                arguments.append(QVariant(QString(argv[i])));
             }
             remoteAction = new MRemoteAction(serviceName, objectPath, interface, methodName, arguments);
         } else {
@@ -318,7 +321,11 @@ int main(int argc, char *argv[])
                     notification.setCount(count);
                     notification.setIdentifier(identifier);
                     if (timestamp != 0) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+                        notification.setTimestamp(QDateTime::fromSecsSinceEpoch(timestamp));
+#else
                         notification.setTimestamp(QDateTime::fromTime_t(timestamp));
+#endif
                     }
                     notification.publish();
                     result = notification.id();
@@ -329,7 +336,11 @@ int main(int argc, char *argv[])
                     notification.setCount(count);
                     notification.setIdentifier(identifier);
                     if (timestamp != 0) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+                        notification.setTimestamp(QDateTime::fromSecsSinceEpoch(timestamp));
+#else
                         notification.setTimestamp(QDateTime::fromTime_t(timestamp));
+#endif
                     }
                     notification.publish();
                     result = notification.id();
@@ -357,7 +368,11 @@ int main(int argc, char *argv[])
                 notification.setCount(count);
                 notification.setIdentifier(identifier);
                 if (timestamp != 0) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+                    notification.setTimestamp(QDateTime::fromSecsSinceEpoch(timestamp));
+#else
                     notification.setTimestamp(QDateTime::fromTime_t(timestamp));
+#endif
                 }
                 notification.publish();
             }

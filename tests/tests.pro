@@ -9,7 +9,7 @@ SUBDIRS = \
 
 packagesExist(dconf) {
     SUBDIRS += ut_mdconfgroup.pro
-    SUBDIRS += ut_mgconfitem.pro
+    SUBDIRS += ut_mdconfitem.pro
 }
 
 configure($${PWD}/tests.xml.in)

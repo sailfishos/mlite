@@ -2,18 +2,18 @@
 #include <QtTest/QSignalSpy>
 #include <QTest>
 
-#include "mgconfitem.h"
+#include "mdconfitem.h"
 
 #include "testbase.h"
 
 namespace Tests {
 
-class UtMGConfItem : public TestBase
+class UtMDConfItem : public TestBase
 {
     Q_OBJECT
 
 public:
-    UtMGConfItem();
+    UtMDConfItem();
 
 private slots:
     void initTestCase();
@@ -31,25 +31,25 @@ private:
 
 using namespace Tests;
 
-const QString UtMGConfItem::KEY = "/mlite-tests/ut_mgconfitem/foo";
+const QString UtMDConfItem::KEY = "/mlite-tests/ut_mdconfitem/foo";
 
-UtMGConfItem::UtMGConfItem()
+UtMDConfItem::UtMDConfItem()
 {
 }
 
-void UtMGConfItem::initTestCase()
+void UtMDConfItem::initTestCase()
 {
-    MGConfItem(KEY).unset();
+    MDConfItem(KEY).unset();
 }
 
-void UtMGConfItem::cleanup()
+void UtMDConfItem::cleanup()
 {
     if (!QTest::currentTestFailed()) {
-        MGConfItem(KEY).unset();
+        MDConfItem(KEY).unset();
     }
 }
 
-void UtMGConfItem::basicTest_data()
+void UtMDConfItem::basicTest_data()
 {
     QTest::addColumn<QVariant>("value1");
     QTest::addColumn<QVariant>("value2");
@@ -75,14 +75,14 @@ void UtMGConfItem::basicTest_data()
         << QVariant((QVariantList() << (double)24.5 << (double)42.5));
 }
 
-void UtMGConfItem::basicTest()
+void UtMDConfItem::basicTest()
 {
     QFETCH(QVariant, value1);
     QFETCH(QVariant, value2);
 
-    MGConfItem item1(KEY);
+    MDConfItem item1(KEY);
 
-    MGConfItem item2(KEY);
+    MDConfItem item2(KEY);
     QSignalSpy spy2(&item2, SIGNAL(valueChanged()));
     item2.set(value1);
     QCOMPARE(item2.value(), value1);
@@ -91,7 +91,7 @@ void UtMGConfItem::basicTest()
     waitForSignal(&item1, SIGNAL(valueChanged()));
     QTRY_COMPARE(item1.value(), value1);
 
-    QCOMPARE(MGConfItem(KEY).value(), value1);
+    QCOMPARE(MDConfItem(KEY).value(), value1);
 
     QSignalSpy spy1(&item1, SIGNAL(valueChanged()));
     item1.set(value2);
@@ -101,35 +101,35 @@ void UtMGConfItem::basicTest()
     waitForSignal(&item2, SIGNAL(valueChanged()));
     QTRY_COMPARE(item2.value(), value2);
 
-    QCOMPARE(MGConfItem(KEY).value(), value2);
+    QCOMPARE(MDConfItem(KEY).value(), value2);
 }
 
-void UtMGConfItem::defaultValue()
+void UtMDConfItem::defaultValue()
 {
-    MGConfItem(KEY).unset();
-    QTRY_COMPARE(MGConfItem(KEY).value("default").toString(), QString("default"));
+    MDConfItem(KEY).unset();
+    QTRY_COMPARE(MDConfItem(KEY).value("default").toString(), QString("default"));
 }
 
-void UtMGConfItem::listDirs()
+void UtMDConfItem::listDirs()
 {
-  MGConfItem key1("/mlite-tests/ut_mgconfitem/foo1/foo1");
+  MDConfItem key1("/mlite-tests/ut_mdconfitem/foo1/foo1");
   key1.set("foo1");
-  MGConfItem key2("/mlite-tests/ut_mgconfitem/foo2/foo2");
+  MDConfItem key2("/mlite-tests/ut_mdconfitem/foo2/foo2");
   key2.set("foo2");
 
-  QTRY_VERIFY(MGConfItem("/mlite-tests/ut_mgconfitem").listDirs().size() == 2);
+  QTRY_VERIFY(MDConfItem("/mlite-tests/ut_mdconfitem").listDirs().size() == 2);
 
-  QStringList keys = MGConfItem("/mlite-tests/ut_mgconfitem").listDirs();
+  QStringList keys = MDConfItem("/mlite-tests/ut_mdconfitem").listDirs();
 
-  QVERIFY(keys.indexOf("/mlite-tests/ut_mgconfitem/foo1") != -1);
-  QVERIFY(keys.indexOf("/mlite-tests/ut_mgconfitem/foo2") != -1);
+  QVERIFY(keys.indexOf("/mlite-tests/ut_mdconfitem/foo1") != -1);
+  QVERIFY(keys.indexOf("/mlite-tests/ut_mdconfitem/foo2") != -1);
 
   key1.unset();
   key2.unset();
 
-  QTRY_VERIFY(MGConfItem("/mlite-tests/ut_mgconfitem").listDirs().size() == 0);
+  QTRY_VERIFY(MDConfItem("/mlite-tests/ut_mdconfitem").listDirs().size() == 0);
 }
 
-QTEST_MAIN(Tests::UtMGConfItem)
+QTEST_MAIN(Tests::UtMDConfItem)
 
-#include "ut_mgconfitem.moc"
+#include "ut_mdconfitem.moc"

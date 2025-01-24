@@ -26,14 +26,14 @@
 #include <QVariant>
 #include <QDebug>
 
-#include "mgconfitem.h"
+#include "mdconfitem.h"
 
 #include "mdconf_p.h"
 
-struct MGConfItemPrivate : public QObject
+struct MDConfItemPrivate : public QObject
 {
-    MGConfItemPrivate(QString aKey, MGConfItem* aParent);
-    ~MGConfItemPrivate();
+    MDConfItemPrivate(QString aKey, MDConfItem* aParent);
+    ~MDConfItemPrivate();
 
     void customEvent(QEvent* event);
     static QByteArray convertKey(const QString &key);
@@ -46,7 +46,7 @@ struct MGConfItemPrivate : public QObject
     QByteArray dconf_key;
 };
 
-MGConfItemPrivate::MGConfItemPrivate(QString aKey, MGConfItem* aParent)
+MDConfItemPrivate::MDConfItemPrivate(QString aKey, MDConfItem* aParent)
     : QObject(aParent)
     , key(aKey)
     , client(dconf_client_new())
@@ -56,40 +56,40 @@ MGConfItemPrivate::MGConfItemPrivate(QString aKey, MGConfItem* aParent)
     dconf_client_watch_fast(client, dconf_key);
 }
 
-MGConfItemPrivate::~MGConfItemPrivate()
+MDConfItemPrivate::~MDConfItemPrivate()
 {
     g_signal_handler_disconnect(client, handler);
     dconf_client_unwatch_fast(client, dconf_key);
     g_object_unref(client);
 }
 
-QByteArray MGConfItemPrivate::convertKey(const QString &key)
+QByteArray MDConfItemPrivate::convertKey(const QString &key)
 {
     if (key.startsWith('/')) {
         return key.toUtf8();
     } else {
         QString replaced = key;
         replaced.replace('.', '/');
-        qWarning() << "Using dot-separated key names with MGConfItem is deprecated.";
+        qWarning() << "Using dot-separated key names with MDConfItem is deprecated.";
         qWarning() << "Please use" << '/' + replaced << "instead of" << key;
         return '/' + replaced.toUtf8();
     }
 }
 
-void MGConfItemPrivate::changed(DConfClient*, gchar *prefix, GStrv changes, gchar*, gpointer data)
+void MDConfItemPrivate::changed(DConfClient*, gchar *prefix, GStrv changes, gchar*, gpointer data)
 {
     MDConf::Event event(prefix, changes);
-    QCoreApplication::sendEvent((MGConfItemPrivate*)data, &event);
+    QCoreApplication::sendEvent((MDConfItemPrivate*)data, &event);
 }
 
-void MGConfItemPrivate::customEvent(QEvent* event)
+void MDConfItemPrivate::customEvent(QEvent* event)
 {
     if (event->type() == (QEvent::Type)MDConf::Event::TYPE) {
-        ((MGConfItem*)parent())->update_value(true);
+        ((MDConfItem*)parent())->update_value(true);
     }
 }
 
-void MGConfItem::update_value(bool emit_signal)
+void MDConfItem::update_value(bool emit_signal)
 {
     QVariant new_value;
     GVariant *v = dconf_client_read(priv->client, priv->dconf_key);
@@ -113,17 +113,17 @@ void MGConfItem::update_value(bool emit_signal)
     }
 }
 
-QString MGConfItem::key() const
+QString MDConfItem::key() const
 {
     return priv->key;
 }
 
-QVariant MGConfItem::value() const
+QVariant MDConfItem::value() const
 {
     return priv->value;
 }
 
-QVariant MGConfItem::value(const QVariant &def) const
+QVariant MDConfItem::value(const QVariant &def) const
 {
     if (priv->value.isNull())
         return def;
@@ -131,7 +131,7 @@ QVariant MGConfItem::value(const QVariant &def) const
         return priv->value;
 }
 
-void MGConfItem::set(const QVariant &val)
+void MDConfItem::set(const QVariant &val)
 {
     GVariant *v = NULL;
 
@@ -150,12 +150,12 @@ void MGConfItem::set(const QVariant &val)
     }
 }
 
-void MGConfItem::unset()
+void MDConfItem::unset()
 {
     set(QVariant());
 }
 
-QStringList MGConfItem::listDirs() const
+QStringList MDConfItem::listDirs() const
 {
     QStringList children;
     gint length = 0;
@@ -185,7 +185,7 @@ QStringList MGConfItem::listDirs() const
 
         // If we have error set then dconf_is_dir() has returned false so we should be safe here
         if (error) {
-            qWarning() << "MGConfItem" << error->message;
+            qWarning() << "MDConfItem" << error->message;
             g_error_free(error);
             error = NULL;
         }
@@ -195,19 +195,19 @@ QStringList MGConfItem::listDirs() const
     return children;
 }
 
-bool MGConfItem::sync()
+bool MDConfItem::sync()
 {
     dconf_client_sync(priv->client);
     return true;
 }
 
-MGConfItem::MGConfItem(const QString &key, QObject *parent)
+MDConfItem::MDConfItem(const QString &key, QObject *parent)
     : QObject(parent)
-    , priv(new MGConfItemPrivate(key, this))
+    , priv(new MDConfItemPrivate(key, this))
 {
     update_value(false);
 }
 
-MGConfItem::~MGConfItem()
+MDConfItem::~MDConfItem()
 {
 }

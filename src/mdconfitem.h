@@ -16,8 +16,8 @@
 **
 ****************************************************************************/
 
-#ifndef MGCONFITEM_H
-#define MGCONFITEM_H
+#ifndef MDCONFITEM_H
+#define MDCONFITEM_H
 
 #include <QVariant>
 #include <QStringList>
@@ -27,14 +27,14 @@
 
 /*!
 
-  \brief MGConfItem is a simple C++ wrapper for dconf.
+  \brief MDConfItem is a simple C++ wrapper for dconf.
 
-  Creating a MGConfItem instance gives you access to a single dconf
+  Creating a MDConfItem instance gives you access to a single dconf
   key.  You can get and set its value, and connect to its
   valueChanged() signal to be notified about changes.
 
   The value of a dconf key is returned to you as a QVariant, and you
-  pass in a QVariant when setting the value.  MGConfItem converts
+  pass in a QVariant when setting the value.  MDConfItem converts
   between a QVariant and dconf values as needed, and according to the
   following rules:
 
@@ -57,27 +57,27 @@
 
   - Any other QVariant or dconf value is essentially ignored.
 
-  \warning MGConfItem is as thread-safe as dconf.
+  \warning MDConfItem is as thread-safe as dconf.
 
 */
 
-class MLITESHARED_EXPORT MGConfItem : public QObject
+class MLITESHARED_EXPORT MDConfItem : public QObject
 {
     Q_OBJECT
 
 public:
-    /*! Initializes a MGConfItem to access the dconf key denoted by
+    /*! Initializes a MDConfItem to access the dconf key denoted by
         \a key.  Key names should follow the normal dconf conventions
         like "/myapp/settings/first".
 
         \param key    The name of the key.
         \param parent Parent object
     */
-    explicit MGConfItem(const QString &key, QObject *parent = 0);
+    explicit MDConfItem(const QString &key, QObject *parent = 0);
 
-    /*! Finalizes a MGConfItem.
+    /*! Finalizes a MDConfItem.
      */
-    virtual ~MGConfItem();
+    virtual ~MDConfItem();
 
     /*! Returns the key of this item, as given to the constructor.
      */
@@ -97,8 +97,8 @@ public:
         reasons, the current value is not changed and nothing happens.
 
         When the new value is different from the old value, the
-        changedValue() signal is emitted on this MGConfItem as part
-        of calling set(), but other MGConfItem:s for the same key do
+        changedValue() signal is emitted on this MDConfItem as part
+        of calling set(), but other MDConfItem:s for the same key do
         only receive a notification once the main loop runs.
 
         \param val  The new value.
@@ -136,10 +136,10 @@ Q_SIGNALS:
     void valueChanged();
 
 private:
-    friend struct MGConfItemPrivate;
-    struct MGConfItemPrivate *priv;
+    friend struct MDConfItemPrivate;
+    struct MDConfItemPrivate *priv;
 
     void update_value(bool emit_signal);
 };
 
-#endif // MGCONFITEM_H
+#endif // MDCONFITEM_H

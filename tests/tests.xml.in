@@ -17,9 +17,9 @@
                 <step>@INSTALL_TESTDIR@/ut_mfiledatastore</step>
             </case>
 
-            <case name="ut_mgconfitem">
-                <description>Tests the MGConfItem class</description>
-                <step>@INSTALL_TESTDIR@/ut_mgconfitem</step>
+            <case name="ut_mdconfitem">
+                <description>Tests the MDConfItem class</description>
+                <step>@INSTALL_TESTDIR@/ut_mdconfitem</step>
             </case>
 
             <case name="ut_mnotification">

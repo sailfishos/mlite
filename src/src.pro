@@ -24,22 +24,27 @@ PKGCONFIG += glib-2.0
 packagesExist(dconf) {
     PKGCONFIG += dconf
     DEFINES += HAVE_DCONF
-    HEADERS += mgconfitem.h \
-               MGConfItem \
+    HEADERS += mdconfitem.h \
+               MDConfItem \
                mdconf_p.h \
                mdconfgroup.h \
-               MDConfGroup
-    SOURCES += mgconfitem.cpp \
+               MDConfGroup \
+               mgconfitem.h \
+               MGConfItem
+    SOURCES += mdconfitem.cpp \
                mdconf.cpp \
-               mdconfgroup.cpp
+               mdconfgroup.cpp \
+               mgconfitem.cpp
 
-    INSTALL_HEADERS += mgconfitem.h \
-                       MGConfItem \
+    INSTALL_HEADERS += mdconfitem.h \
+                       MDConfItem \
                        mdconfgroup.h \
-                       MDConfGroup
+                       MDConfGroup \
+                       mgconfitem.h \
+                       MGConfItem
 
 } else {
-    warning("dconf not found; MGConfItem will not be built")
+    warning("dconf not found; MDConfItem will not be built")
 }
 
 QDBUSXML2CPP = $$[QT_INSTALL_BINS]/qdbusxml2cpp

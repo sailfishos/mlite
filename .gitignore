@@ -5,10 +5,12 @@ Makefile
 *.pro.user
 *.moc
 *.list
+.qmake.stash
 ut_*
 moc_*
 mnotificationmanagerproxy.*
 /src/mlite5.pc
+/src/mlite6.pc
 /tests/Makefile.ut_*
 /tests/tests.xml
 /tools/mlitenotificationtool/mlitenotificationtool

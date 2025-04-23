@@ -33,7 +33,7 @@ const auto TranslationSeparator = QStringLiteral("-");
 const auto SailjailSection = QStringLiteral("X-Sailjail");
 const auto SailjailPermissionsKey = QStringLiteral("Permissions");
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 10, 0))
+#if (QT_VERSION < QT_VERSION_CHECK(5, 14, 0))
 QPair<QStringRef, QStringRef> getField(const QString &line)
 {
     QStringRef remaining = line.midRef(0).trimmed();

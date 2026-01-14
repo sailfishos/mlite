@@ -18,6 +18,7 @@
 #include "mdesktopentry.h"
 #include "mpermission.h"
 #include "mpermission_p.h"
+#include "logging.h"
 
 namespace {
 const auto PermissionFileDirectory = QStringLiteral("/etc/sailjail/permissions/");
@@ -83,12 +84,12 @@ MPermissionPrivate::MPermissionPrivate(const QString &fileName) :
 {
     QFile file(fileName);
     if (!file.exists()) {
-        qWarning() << "Permission file" << file.fileName() << "does not exist!";
+        qCWarning(lcMlite) << "Permission file" << file.fileName() << "does not exist!";
         return;
     }
 
     if (!file.open(QFile::ReadOnly)) {
-        qWarning() << "Permission file" << file.fileName() << "could not be opened!";
+        qCWarning(lcMlite) << "Permission file" << file.fileName() << "could not be opened!";
         return;
     }
 
@@ -126,7 +127,7 @@ MPermissionPrivate::MPermissionPrivate(const QString &fileName) :
     }
 
     if (description.isEmpty()) {
-        qWarning() << "Permission file" << file.fileName() << "is missing a required field.";
+        qCWarning(lcMlite) << "Permission file" << file.fileName() << "is missing a required field.";
     } else {
         fallbackDescription = std::move(description);
         fallbackLongDescription = std::move(descriptionLong);
@@ -165,7 +166,7 @@ QTranslator *MPermissionPrivate::translator() const
     if (!s_translators.contains(translationCatalog)) {
         QTranslator *translator = new QTranslator;
         if (!translator->load(QLocale(), translationCatalog, TranslationSeparator, TranslationDirectory)) {
-            qWarning() << "Failed to load translation catalog" << translationCatalog;
+            qCWarning(lcMlite) << "Failed to load translation catalog" << translationCatalog;
             delete translator;
             translator = 0; // Mark as failed
         }

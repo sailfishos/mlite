@@ -27,8 +27,8 @@
 #include <QDebug>
 
 #include "mdconfitem.h"
-
 #include "mdconf_p.h"
+#include "logging.h"
 
 struct MDConfItemPrivate : public QObject
 {
@@ -70,8 +70,8 @@ QByteArray MDConfItemPrivate::convertKey(const QString &key)
     } else {
         QString replaced = key;
         replaced.replace('.', '/');
-        qWarning() << "Using dot-separated key names with MDConfItem is deprecated.";
-        qWarning() << "Please use" << '/' + replaced << "instead of" << key;
+        qCWarning(lcMlite) << "Using dot-separated key names with MDConfItem is deprecated.";
+        qCWarning(lcMlite) << "Please use" << '/' + replaced << "instead of" << key;
         return '/' + replaced.toUtf8();
     }
 }
@@ -140,13 +140,13 @@ void MDConfItem::set(const QVariant &val)
         dconf_client_write_fast(priv->client, priv->dconf_key, v, &error);
 
         if (error) {
-            qWarning() << error->message;
+            qCWarning(lcMlite) << error->message;
             g_error_free(error);
         }
 
         // We will not emit any signals because dconf should take care of that for us.
     } else {
-        qWarning() << "Can't store a" << val.typeName();
+        qCWarning(lcMlite) << "Can't store a" << val.typeName();
     }
 }
 
@@ -185,7 +185,7 @@ QStringList MDConfItem::listDirs() const
 
         // If we have error set then dconf_is_dir() has returned false so we should be safe here
         if (error) {
-            qWarning() << "MDConfItem" << error->message;
+            qCWarning(lcMlite) << "MDConfItem" << error->message;
             g_error_free(error);
             error = NULL;
         }

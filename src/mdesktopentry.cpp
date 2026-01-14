@@ -26,6 +26,7 @@
 
 #include "mdesktopentry.h"
 #include "mdesktopentry_p.h"
+#include "logging.h"
 
 namespace {
 const QString DesktopEntrySection("Desktop Entry");
@@ -75,7 +76,7 @@ bool GKeyFileWrapper::load(QIODevice &device)
 
     GError *err = NULL;
     if (!g_key_file_load_from_data(m_key_file, contents.constData(), contents.size(), G_KEY_FILE_NONE, &err)) {
-        qWarning() << "Could not load .desktop file:" << QString::fromUtf8(err->message);
+        qCWarning(lcMlite) << "Could not load .desktop file:" << QString::fromUtf8(err->message);
         g_clear_error(&err);
         return false;
     }
@@ -117,7 +118,7 @@ QStringList GKeyFileWrapper::keys(const QString &section) const
 
     gchar **keys = g_key_file_get_keys(m_key_file, section_utf8.constData(), NULL, &err);
     if (keys == NULL) {
-        qWarning() << "Could not get keys:" << QString::fromUtf8(err->message);
+        qCWarning(lcMlite) << "Could not get keys:" << QString::fromUtf8(err->message);
         g_clear_error(&err);
         return result;
     }
@@ -141,7 +142,7 @@ QString GKeyFileWrapper::localizedValue(const QString &section, const QString &k
     GError *err = NULL;
     gchar *value = g_key_file_get_locale_string(m_key_file, section_utf8.constData(), key_utf8.constData(), NULL, &err);
     if (!value) {
-        qWarning() << "Could not read value:" << QString::fromUtf8(err->message);
+        qCWarning(lcMlite) << "Could not read value:" << QString::fromUtf8(err->message);
         g_clear_error(&err);
         return result;
     }
@@ -162,7 +163,7 @@ QString GKeyFileWrapper::stringValue(const QString &section, const QString &key)
     GError *err = NULL;
     gchar *value = g_key_file_get_string(m_key_file, section_utf8.constData(), key_utf8.constData(), &err);
     if (!value) {
-        qWarning() << "Could not read value:" << QString::fromUtf8(err->message);
+        qCWarning(lcMlite) << "Could not read value:" << QString::fromUtf8(err->message);
         g_clear_error(&err);
         return result;
     }
@@ -183,7 +184,7 @@ bool GKeyFileWrapper::booleanValue(const QString &section, const QString &key) c
     GError *err = NULL;
     result = g_key_file_get_boolean(m_key_file, section_utf8.constData(), key_utf8.constData(), &err);
     if (err != NULL) {
-        qWarning() << "Could not read boolean value for "
+        qCWarning(lcMlite) << "Could not read boolean value for "
                    << section << "/" << key << ":" << QString::fromUtf8(err->message);
         g_clear_error(&err);
     }
@@ -241,7 +242,7 @@ MDesktopEntryPrivate::MDesktopEntryPrivate(const QString &fileName)
             valid = false;
         }
     } else {
-        qDebug() << "Specified Desktop file does not exist" << fileName;
+        qCDebug(lcMlite) << "Specified Desktop file does not exist" << fileName;
     }
 }
 
@@ -266,7 +267,7 @@ QTranslator *MDesktopEntryPrivate::loadTranslator() const
         catalog = keyFile.stringValue(DesktopEntrySection, LegacyTranslationCatalogKey);
 
     if (catalog.isEmpty() || !translator->load(QLocale(), catalog, "-", "/usr/share/translations")) {
-        qDebug() << "Unable to load catalog" << catalog;
+        qCDebug(lcMlite) << "Unable to load catalog" << catalog;
         delete translator;
         translator = 0;
         translatorUnavailable = true;

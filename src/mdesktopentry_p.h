@@ -23,7 +23,8 @@
 class MDesktopEntry;
 class QTranslator;
 
-class GKeyFileWrapper {
+class GKeyFileWrapper
+{
 public:
     GKeyFileWrapper();
     ~GKeyFileWrapper();

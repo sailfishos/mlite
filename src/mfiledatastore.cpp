@@ -329,4 +329,3 @@ void MFileDataStore::directoryChanged(const QString &fileName)
         fileChanged(d->settings.fileName());
     }
 }
-

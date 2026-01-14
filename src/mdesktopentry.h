@@ -278,5 +278,5 @@ private:
     Q_DISABLE_COPY(MDesktopEntry)
     Q_DECLARE_PRIVATE(MDesktopEntry)
 };
-#endif /* MDESKTOPENTRY_H_ */
 
+#endif /* MDESKTOPENTRY_H_ */

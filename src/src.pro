@@ -57,7 +57,8 @@ SOURCES += mnotificationmanagerproxy.cpp \
            mremoteaction.cpp \
            mdesktopentry.cpp \
            mpermission.cpp \
-           mfiledatastore.cpp
+           mfiledatastore.cpp \
+           logging.cpp
 
 HEADERS += mnotificationmanagerproxy.h \
            mnotification.h \
@@ -73,7 +74,8 @@ HEADERS += mnotificationmanagerproxy.h \
            mlite-global.h \
            mfiledatastore_p.h \
            mdataaccess.h \
-           mdatastore.h
+           mdatastore.h \
+           logging.h
 
 INSTALL_HEADERS += mnotification.h \
                    mnotificationgroup.h \

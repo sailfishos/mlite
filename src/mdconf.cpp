@@ -10,6 +10,7 @@
 ****************************************************************************/
 
 #include "mdconf_p.h"
+#include "logging.h"
 
 #include <QDebug>
 #include <QPoint>
@@ -331,12 +332,12 @@ void MDConf::write(DConfClient *client, const QByteArray &key, const QVariant &v
             dconf_client_write_fast(client, key, gvariant, &error);
 
         if (error) {
-            qWarning() << "MDConf: Failed to write value for " << key << value;
-            qWarning() << error->message;
+            qCWarning(lcMlite) << "MDConf: Failed to write value for " << key << value;
+            qCWarning(lcMlite) << error->message;
             g_error_free(error);
         }
     } else {
-        qWarning() << "MDConf: no conversion for" << key << value;
+        qCWarning(lcMlite) << "MDConf: no conversion for" << key << value;
     }
 }
 

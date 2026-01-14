@@ -47,9 +47,9 @@ public:
      * \param arguments the arguments of the D-Bus call. Defaults to no arguments.
      * \param parent Parent object
      */
-    explicit MRemoteAction(const QString &serviceName, const QString &objectPath, const QString &interface,
-                           const QString &methodName, const QList<QVariant> &arguments = QList<QVariant>(),
-                           QObject *parent = NULL);
+    MRemoteAction(const QString &serviceName, const QString &objectPath, const QString &interface,
+                  const QString &methodName, const QList<QVariant> &arguments = QList<QVariant>(),
+                  QObject *parent = nullptr);
 
     /*!
      * \brief Constructs a MRemoteAction from a string representation of a D-Bus remote action acquired with toString().
@@ -57,7 +57,7 @@ public:
      * \param string the QString to construct the MRemoteAction from
      * \param parent Parent object
      */
-    explicit MRemoteAction(const QString &string = QString(), QObject *parent = NULL);
+    explicit MRemoteAction(const QString &string = QString(), QObject *parent = nullptr);
 
     /*!
      * \brief Constructs a copy of another MRemoteAction.

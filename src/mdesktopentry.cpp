@@ -27,6 +27,7 @@
 #include "mdesktopentry.h"
 #include "mdesktopentry_p.h"
 
+namespace {
 const QString DesktopEntrySection("Desktop Entry");
 const QString TypeKey("Type");
 const QString VersionKey("Version");
@@ -56,7 +57,7 @@ const QString SailjailSection("X-Sailjail");
 const QString SandboxingKey("Sandboxing");
 const QString DisabledValue("Disabled");
 const int TranslatorLifetime = 100;
-
+}
 
 GKeyFileWrapper::GKeyFileWrapper()
     : m_key_file(g_key_file_new())

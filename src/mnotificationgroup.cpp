@@ -155,7 +155,8 @@ bool MNotificationGroup::publish(const QString &previewSummary, const QString &p
         }
     }
 
-    d->id = notificationManager()->Notify(QFileInfo(QCoreApplication::arguments()[0]).fileName(), d->id, d->image, summary, body, QStringList(), hints, -1);
+    d->id = notificationManager()->Notify(QFileInfo(QCoreApplication::arguments()[0]).fileName(), d->id, d->image,
+                                          summary, body, QStringList(), hints, -1);
 
     return d->id != 0;
 }

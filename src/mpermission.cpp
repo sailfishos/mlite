@@ -84,7 +84,10 @@ MPermissionPrivate::MPermissionPrivate(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.exists()) {
-        qCWarning(lcMlite) << "Permission file" << file.fileName() << "does not exist!";
+        // Privileged is defined internal to sailjail and doesn't necessarily have a permission file
+        if (file.fileName() != PermissionFileDirectory + QStringLiteral("Privileged") + PermissionSuffix) {
+            qCWarning(lcMlite) << "Permission file" << file.fileName() << "does not exist!";
+        }
         return;
     }
 

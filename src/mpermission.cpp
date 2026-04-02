@@ -79,8 +79,8 @@ QPair<QStringView, QStringView> getField(const QString &line)
 
 QHash<QString, QTranslator *> MPermissionPrivate::s_translators;
 
-MPermissionPrivate::MPermissionPrivate(const QString &fileName) :
-    fileName(fileName)
+MPermissionPrivate::MPermissionPrivate(const QString &fileName)
+    : fileName(fileName)
 {
     QFile file(fileName);
     if (!file.exists()) {
@@ -137,13 +137,13 @@ MPermissionPrivate::MPermissionPrivate(const QString &fileName) :
     }
 }
 
-MPermissionPrivate::MPermissionPrivate(const MPermissionPrivate &other) :
-    fileName(other.fileName),
-    fallbackDescription(other.fallbackDescription),
-    fallbackLongDescription(other.fallbackLongDescription),
-    translationCatalog(other.translationCatalog),
-    descriptionTranslationKey(other.descriptionTranslationKey),
-    longDescriptionTranslationKey(other.longDescriptionTranslationKey)
+MPermissionPrivate::MPermissionPrivate(const MPermissionPrivate &other)
+    : fileName(other.fileName),
+      fallbackDescription(other.fallbackDescription),
+      fallbackLongDescription(other.fallbackLongDescription),
+      translationCatalog(other.translationCatalog),
+      descriptionTranslationKey(other.descriptionTranslationKey),
+      longDescriptionTranslationKey(other.longDescriptionTranslationKey)
 {
 }
 
@@ -168,20 +168,20 @@ QTranslator *MPermissionPrivate::translator() const
         if (!translator->load(QLocale(), translationCatalog, TranslationSeparator, TranslationDirectory)) {
             qCWarning(lcMlite) << "Failed to load translation catalog" << translationCatalog;
             delete translator;
-            translator = 0; // Mark as failed
+            translator = nullptr; // Mark as failed
         }
         s_translators.insert(translationCatalog, translator);
     }
     return s_translators.value(translationCatalog);
 }
 
-MPermission::MPermission(const QString &fileName) :
-    d_ptr(new MPermissionPrivate(fileName))
+MPermission::MPermission(const QString &fileName)
+    : d_ptr(new MPermissionPrivate(fileName))
 {
 }
 
-MPermission::MPermission(const MPermission &other) :
-    d_ptr(new MPermissionPrivate(*other.d_ptr))
+MPermission::MPermission(const MPermission &other)
+    : d_ptr(new MPermissionPrivate(*other.d_ptr))
 {
 }
 
@@ -199,6 +199,7 @@ QList<MPermission> MPermission::fromDesktopEntry(const MDesktopEntry &entry)
             name = name.remove(0, 1).trimmed();
         if (!name.endsWith(PermissionSuffix))
             name.append(PermissionSuffix);
+
         MPermission permission(PermissionFileDirectory + name);
         if (permission.isValid())
             permissions.append(permission);

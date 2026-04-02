@@ -229,7 +229,7 @@ MDesktopEntryPrivate::MDesktopEntryPrivate(const QString &fileName)
     , keyFile()
     , valid(true)
     , translatorUnavailable(false)
-    , q_ptr(NULL)
+    , q_ptr(nullptr)
 {
     QFile file(fileName);
 
@@ -253,7 +253,7 @@ MDesktopEntryPrivate::~MDesktopEntryPrivate()
 QTranslator *MDesktopEntryPrivate::loadTranslator() const
 {
     if (translatorUnavailable)
-        return 0;
+        return nullptr;
 
     if (cachedTranslator)
         return cachedTranslator.data();
@@ -269,7 +269,7 @@ QTranslator *MDesktopEntryPrivate::loadTranslator() const
     if (catalog.isEmpty() || !translator->load(QLocale(), catalog, "-", "/usr/share/translations")) {
         qCDebug(lcMlite) << "Unable to load catalog" << catalog;
         delete translator;
-        translator = 0;
+        translator = nullptr;
         translatorUnavailable = true;
     }
 
@@ -439,10 +439,10 @@ bool MDesktopEntry::isValid() const
     }
 
     // In case of an application either the Exec key needs to be present or D-Bus activation supported
-    if (type() == QStringLiteral("Application") &&
-            !contains(DesktopEntrySection, ExecKey) &&
+    if (type() == QStringLiteral("Application")
+            && !contains(DesktopEntrySection, ExecKey)
             // MER#1557: Migrate to freedesktop.org DBusActivatable API
-            !contains(DesktopEntrySection, XMaemoServiceKey)) {
+            && !contains(DesktopEntrySection, XMaemoServiceKey)) {
         return false;
     }
 

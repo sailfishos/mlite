@@ -50,8 +50,8 @@ MNotificationGroup::~MNotificationGroup()
 {
 }
 
-MNotificationGroup::MNotificationGroup(uint id) :
-    MNotification(*new MNotificationGroupPrivate)
+MNotificationGroup::MNotificationGroup(uint id)
+    : MNotification(*new MNotificationGroupPrivate)
 {
     Q_D(MNotificationGroup);
     d->id = id;
